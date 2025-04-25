@@ -1,0 +1,104 @@
+/* ==========================
+   Agent Page Specific Styles (Healthcare Example)
+   ========================== */
+
+   .agent-container {
+    max-width: 800px; /* Slightly narrower for focused tasks */
+    margin: 2rem auto;
+    background-color: #fff;
+    padding: 2rem 2.5rem; /* Generous padding */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid #dee2e6;
+}
+
+.agent-title {
+    text-align: center;
+    color: #198754; /* Bootstrap success green for healthcare */
+    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+.agent-title i { /* Style Font Awesome icon if used */
+    font-size: 1.5rem; /* Adjust icon size */
+}
+
+
+.agent-description {
+    text-align: center;
+    color: #495057;
+    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+}
+.agent-description strong {
+    color: #dc3545; /* Red emphasis for disclaimer */
+}
+
+.agent-divider {
+    border: none;
+    border-top: 1px dashed #ced4da;
+    margin: 2rem 0;
+}
+
+.agent-panel {
+    border: none; /* Remove border from panel inside container */
+    padding: 0; /* Remove padding */
+    background: none; /* Transparent background */
+    box-shadow: none;
+}
+
+#content-healthcare label { /* Style specific labels if needed */
+    font-weight: 600;
+}
+
+.btn-agent-ask { /* Style the main action button */
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1.1rem;
+    background-color: #198754; /* Healthcare green */
+    border-color: #198754;
+    transition: background-color 0.2s ease, transform 0.1s ease; /* Add transform for subtle click effect */
+}
+.btn-agent-ask:hover:not(:disabled) {
+    background-color: #157347;
+    border-color: #146c43;
+    transform: translateY(-1px);
+}
+.btn-agent-ask:active:not(:disabled) {
+    transform: translateY(0px); /* Push down on click */
+}
+.btn-agent-ask i { /* Style icon inside button */
+    margin-right: 0.5rem;
+}
+
+
+#healthcareAgentOutput {
+    margin-top: 1rem;
+    padding: 1.2rem;
+    background-color: #e9f5ec; /* Very light green background */
+    border-radius: 5px;
+    border: 1px solid #c3e6cb;
+    min-height: 120px;
+    white-space: pre-wrap;
+    font-size: 1rem;
+    color: #212529;
+}
+#healthcareAgentOutput p:first-child { margin-top: 0; }
+#healthcareAgentOutput i { color: #6c757d; }
+
+/* Specific error styling for healthcare agent */
+#healthcareAgentError {
+    background-color: #f8d7da;
+    color: #842029;
+    border-color: #f5c2c7;
+    text-align: left; /* Align error text left */
+}
+
+/* Spacing for back link */
+.agent-back-link {
+    margin-top: 2rem;
+    font-size: 0.95rem;
+}

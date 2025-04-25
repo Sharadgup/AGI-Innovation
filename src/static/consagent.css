@@ -1,0 +1,488 @@
+/* ==========================
+   Base & Global Styles - Add Smooth Scroll
+   ========================== */
+   html {
+    scroll-behavior: smooth; /* Enable smooth scrolling for anchor links (#) */
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    background-color: #f8f9fa; /* Lighter grey background */
+    color: #343a40; /* Dark grey text */
+    font-size: 16px; /* Base font size */
+}
+
+a {
+    color: #007bff; /* Standard link blue */
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
+
+button {
+    cursor: pointer;
+    font-family: inherit; /* Ensure buttons use body font */
+}
+
+*, *::before, *::after {
+    box-sizing: border-box; /* Better box model */
+}
+
+/* ==========================
+   Header & Navigation
+   ========================== */
+
+.main-header {
+    background-color: #0056b3; /* Darker blue header */
+    color: white;
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    position: sticky; /* Keep header visible */
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 1.5rem; /* Slightly larger logo */
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #fff; /* Ensure logo is white */
+}
+
+.main-nav a {
+    color: #e9ecef; /* Lighter text for contrast */
+    text-decoration: none;
+    margin-left: 1.2rem;
+    padding: 0.5rem 0;
+    transition: color 0.2s ease;
+    font-weight: 500;
+}
+
+.main-nav a:hover {
+    color: #fff;
+    text-decoration: none;
+}
+
+.main-nav .welcome-user {
+    margin-right: 1rem;
+    font-style: italic;
+    color: #adb5bd; /* Muted welcome text */
+}
+
+/* Styles specific to Landing Page Header */
+.landing-header {
+    background-color: #fff; /* White header */
+    color: #343a40; /* Dark text */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #e9ecef;
+}
+.landing-header .logo { color: #0056b3; } /* Blue logo text */
+.landing-nav a { color: #495057; } /* Dark grey nav links */
+.landing-nav a:hover { color: #0056b3; }
+
+/* ==========================
+   Main Content & Footer
+   ========================== */
+
+.main-container {
+    max-width: 1500px; /* Allow wider content */
+    margin: 1.5rem auto;
+    padding: 0 1.5rem;
+}
+
+.container { /* Style for the main content block on report page */
+    max-width: 900px; /* Specific width for report page */
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.main-footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding: 1.5rem;
+    font-size: 0.9em;
+    color: #6c757d; /* Grey footer text */
+    border-top: 1px solid #dee2e6; /* Light border */
+    background-color: #e9ecef; /* Subtle background */
+}
+
+/* ==========================
+   Headings & Text
+   ========================== */
+h1, h2, h3, h4 {
+    color: #0056b3; /* Consistent heading color */
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+h1 { font-size: 2rem; text-align: center; margin-bottom: 1.5rem;}
+h2 { font-size: 1.6rem; }
+h3 { font-size: 1.3rem; }
+p { margin-bottom: 1rem; }
+
+
+/* ==========================
+   Forms (Login/Register/Input)
+   ========================== */
+
+.auth-form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+}
+
+.auth-form {
+    max-width: 450px;
+    width: 100%;
+    padding: 2.5rem;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.auth-form h2 { text-align: center; color: #0056b3; margin-bottom: 2rem; font-size: 1.8rem;}
+
+.input-area { /* Area for report input */
+    margin-bottom: 25px;
+}
+
+.form-group { margin-bottom: 1.25rem; }
+
+.form-group label,
+.input-area label {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"],
+textarea#inputText, /* Target report textarea specifically */
+.form-group textarea, /* Generic textarea if needed */
+#content-education textarea, /* Education agent textarea */
+#content-healthcare textarea, /* Healthcare agent textarea */
+#constructionDataContext,    /* Construction context textarea */
+#constructionQueryInput     /* Construction query textarea */
+{
+    width: 100%;
+    padding: 0.85rem;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    line-height: 1.5;
+}
+textarea#inputText { min-height: 150px; resize: vertical; }
+#content-education textarea { min-height: 80px; margin-bottom: 1rem; resize: vertical; }
+#content-healthcare textarea { min-height: 100px; resize: vertical; }
+#constructionDataContext { min-height: 150px; font-family: monospace; font-size: 0.9em; resize: vertical;}
+#constructionQueryInput { min-height: 80px; resize: vertical;}
+
+
+.form-group input:focus,
+textarea#inputText:focus,
+.form-group textarea:focus,
+#content-education textarea:focus,
+#content-healthcare textarea:focus,
+#constructionDataContext:focus,
+#constructionQueryInput:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.auth-switch { text-align: center; margin-top: 1.5rem; font-size: 0.95rem; }
+
+/* ==========================
+   Buttons - Enhanced Hover
+   ========================== */
+
+.btn,
+button#generateBtn,
+button#sendChatBtn,
+button#sendDashboardChatBtn,
+button#submitEducationQueryBtn,
+button#submitHealthcareQueryBtn,
+button#submitConstructionQueryBtn
+{
+    display: inline-block;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    background-color: #007bff; /* Default blue */
+    border: 1px solid #007bff;
+    padding: 0.7rem 1.4rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+    line-height: 1.5;
+    transition: all 0.25s ease-in-out; /* Smooth transition */
+    box-shadow: 0 2px 4px rgba(0,0,0, 0.08); /* Initial shadow */
+}
+/* Override padding for specific buttons */
+button#generateBtn { padding: 12px 20px; font-size: 1.1rem; margin-bottom: 20px; width: 100%; }
+button#submitEducationQueryBtn { margin-bottom: 1rem; }
+button#submitHealthcareQueryBtn { margin-bottom: 1rem; }
+button#submitConstructionQueryBtn { margin-bottom: 1rem; }
+.chat-input-area button { border-radius: 20px; padding: 0.75rem 1.2rem; flex-shrink: 0; }
+
+
+.btn:hover:not(:disabled),
+button:hover:not(:disabled)
+{
+    background-color: #0056b3; /* Default darker blue */
+    border-color: #0056b3;
+    transform: translateY(-2px); /* Lift effect */
+    box-shadow: 0 4px 8px rgba(0,0,0, 0.15); /* Enhanced shadow */
+}
+.btn:active:not(:disabled),
+button:active:not(:disabled) {
+    transform: translateY(0px); /* Push down on click */
+    box-shadow: 0 1px 3px rgba(0,0,0, 0.1);
+}
+
+.btn:disabled, button:disabled {
+    background-color: #adb5bd; border-color: #adb5bd; opacity: 0.65; cursor: not-allowed; transform: none; box-shadow: none;
+}
+
+/* Specific Button Styles & Hovers */
+.btn-secondary { background-color: #6c757d; border-color: #6c757d; }
+.btn-secondary:hover:not(:disabled) { background-color: #5a6268; border-color: #545b62; }
+.btn-success, button#downloadPdfBtn { background-color: #28a745; border-color: #28a745; color: white; }
+.btn-success:hover:not(:disabled), button#downloadPdfBtn:hover:not(:disabled) { background-color: #218838; border-color: #1e7e34; }
+button#downloadPdfBtn { padding: 10px 15px; font-size: 0.9rem; float: right; margin-bottom: 15px;}
+.btn-block { display: block; width: 100%; }
+.btn-outline { background-color: transparent; border-color: #ced4da; color: #495057; }
+.btn-outline:hover { background-color: #f1f3f5; border-color: #adb5bd; color: #0056b3; transform: none; box-shadow: none; }
+.btn-hero { padding: 0.9rem 2.5rem; font-size: 1.2rem; font-weight: bold; background-color: #ffc107; border-color: #ffc107; color: #343a40; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+.btn-hero:hover { background-color: #e0a800; border-color: #d39e00; transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); }
+/* Agent Specific Buttons */
+.education-agent-container .btn-agent-ask { background-color: #0d6efd; border-color: #0d6efd; }
+.education-agent-container .btn-agent-ask:hover:not(:disabled) { background-color: #0b5ed7; border-color: #0a58ca; }
+.healthcare-agent-container .btn-agent-ask { background-color: #198754; border-color: #198754; }
+.healthcare-agent-container .btn-agent-ask:hover:not(:disabled) { background-color: #157347; border-color: #146c43; }
+.construction-agent-container .btn-agent-ask { background-color: #fd7e14; border-color: #fd7e14; }
+.construction-agent-container .btn-agent-ask:hover:not(:disabled) { background-color: #e67311; border-color: #d0660e; }
+.btn-agent-ask i { margin-right: 0.5rem; } /* Space for icons in agent buttons */
+
+
+/* ==========================
+   Flash & Error Messages
+   ========================== */
+
+.flash-messages-container { margin-bottom: 1.5rem; max-width: 900px; margin-left: auto; margin-right: auto; }
+.flash { padding: 1rem 1.25rem; border-radius: 5px; margin-bottom: 1rem; border: 1px solid transparent; font-size: 1rem; font-weight: 500; }
+.flash-success { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; }
+.flash-danger  { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; }
+.flash-warning { background-color: #fff3cd; color: #664d03; border-color: #ffecb5; }
+.flash-info    { background-color: #cff4fc; color: #055160; border-color: #b6effb; }
+.error-message { color: #842029; background-color: #f8d7da; border: 1px solid #f5c2c7; padding: 0.8rem 1rem; margin-top: 1rem; border-radius: 5px; display: none; text-align: center; }
+#chatError { font-size: 0.9em; margin: 0 10px 10px 10px; padding: 0.5rem 1rem; color: #664d03; background-color: #fff3cd; border-color: #ffecb5; } /* Chat specific error */
+#educationAgentError { margin-top: 0.5rem; } /* Education agent error */
+#healthcareAgentError { margin-top: 0.5rem; } /* Healthcare agent error */
+#constructionAgentError { margin-top: 0.5rem; } /* Construction agent error */
+
+
+/* ==========================
+   Landing Page Specific
+   ========================== */
+
+.landing-hero { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; text-align: center; padding: 5rem 1rem; margin-top: -1.5rem; clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%); margin-bottom: 2rem; }
+.hero-content { max-width: 800px; margin: 0 auto; }
+.landing-hero h1 { font-size: 2.8rem; font-weight: 700; margin-bottom: 1rem; color: white; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2); }
+.landing-hero .subtitle { font-size: 1.2rem; margin-bottom: 2rem; color: #e9ecef; opacity: 0.9; }
+.hero-subtext { margin-top: 1rem; font-size: 0.9rem; color: #ced4da; }
+.landing-section { padding: 3rem 1rem; max-width: 1100px; margin: 2rem auto; }
+.landing-section h2 { text-align: center; font-size: 2rem; color: #0056b3; margin-bottom: 2.5rem; position: relative; padding-bottom: 0.5rem; }
+.landing-section h2::after { content: ''; display: block; width: 60px; height: 3px; background-color: #007bff; margin: 0.5rem auto 0; }
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+.feature-item { background-color: #fff; padding: 2rem; text-align: center; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.feature-item:hover { transform: translateY(-5px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); }
+.feature-icon { font-size: 2.5rem; margin-bottom: 1rem; line-height: 1; }
+.feature-item h3 { font-size: 1.3rem; color: #0056b3; margin-bottom: 0.75rem; }
+.feature-item p { font-size: 0.95rem; color: #495057; }
+.tech-section { background-color: #e9ecef; border-radius: 8px; padding: 3rem; }
+.tech-section ul { list-style: none; padding: 0; }
+.tech-section li { margin-bottom: 0.8rem; font-size: 1.05rem; }
+.tech-section li strong { color: #0056b3; }
+.cta-section { text-align: center; background-color: #0056b3; color: white; padding: 3rem 1rem; border-radius: 8px; }
+.cta-section h2 { color: white; margin-bottom: 1rem; }
+.cta-section h2::after { background-color: #ffc107; }
+.cta-section p { color: #e9ecef; margin-bottom: 1.5rem; }
+.cta-section .btn-secondary { background-color: #fff; color: #0056b3; border-color: #fff; }
+.cta-section .btn-secondary:hover { background-color: #f8f9fa; color: #004085; }
+
+/* --- Social Login Buttons --- */
+.social-login-separator { display: flex; align-items: center; text-align: center; margin: 1.5rem 0; color: #6c757d; }
+.social-login-separator::before, .social-login-separator::after { content: ''; flex-grow: 1; border-bottom: 1px solid #dee2e6; }
+.social-login-separator span { padding: 0 1rem; font-size: 0.9em; font-weight: 500; color: #adb5bd; }
+.social-login-buttons { display: flex; flex-direction: column; gap: 0.75rem; }
+.btn-social { display: flex !important; align-items: center; justify-content: center; gap: 0.8rem; font-weight: 500; padding: 0.7rem 1.2rem; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.social-icon { width: 1.2em; height: 1.2em; vertical-align: middle; }
+.btn-google { background-color: #fff; color: #444; border: 1px solid #ccc; }
+.btn-google:hover { background-color: #f8f8f8; border-color: #aaa; color: #333; transform: none; }
+
+
+/* ==========================
+   Dashboard Layout
+   ========================== */
+.dashboard-layout { display: flex; gap: 2rem; margin-top: 1.5rem; align-items: flex-start; }
+.sidebar { flex: 0 0 280px; background-color: #ffffff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08); height: fit-content; border: 1px solid #dee2e6; }
+.sidebar-nav { list-style: none; padding: 0; margin: 0; }
+.sidebar-section { margin-bottom: 1.25rem; } .sidebar-section:last-child { margin-bottom: 0; }
+.sidebar-section-title { font-weight: 600; cursor: pointer; padding: 0.8rem 0.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e9ecef; margin-bottom: 0.75rem; transition: background-color 0.2s ease, color 0.2s ease; position: relative; color: #495057; }
+.sidebar-section-title:hover { background-color: #eef3f8; color: #0056b3;}
+.sidebar-section-title::after { content: '❯'; font-size: 0.9em; transition: transform 0.25s ease-in-out; display: inline-block; }
+details[open] > summary.sidebar-section-title::after { transform: rotate(90deg); }
+summary::-webkit-details-marker, summary::marker { display: none; }
+.sidebar-submenu { list-style: none; padding-left: 0.5rem; margin-top: 0.5rem; margin-bottom: 0; max-height: 0; overflow: hidden; transition: max-height 0.35s ease-out, opacity 0.3s ease-out, margin-bottom 0.35s ease-out; opacity: 0; }
+details[open] > .sidebar-submenu { max-height: 600px; margin-bottom: 1rem; margin-top: 0.75rem; opacity: 1; }
+.sidebar-submenu li { margin-bottom: 0.1rem; }
+.sidebar-submenu a { text-decoration: none; color: #495057; padding: 0.5rem 0.8rem; display: block; border-radius: 4px; transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease, padding-left 0.15s ease; font-size: 0.95rem; }
+.sidebar-submenu a:hover, .sidebar-submenu a.active { background-color: #e9f5ff; color: #0056b3; font-weight: 500; transform: translateX(4px); padding-left: 1.1rem; }
+.main-dashboard-content { flex-grow: 1; background-color: #ffffff; padding: 2rem; border-radius: 8px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08); border: 1px solid #dee2e6; }
+.main-dashboard-content h2 { margin-top: 0; color: #0056b3; border-bottom: 2px solid #e9ecef; padding-bottom: 0.75rem; margin-bottom: 1.5rem; font-size: 1.6rem; }
+.dynamic-content-area { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px dashed #ced4da; min-height: 250px; }
+.content-panel { margin-bottom: 1.5rem; padding: 1.5rem; border: 1px solid #e9ecef; border-radius: 6px; background-color: #f8f9fa; }
+.content-panel h3 { margin-top: 0; color: #495057; }
+
+/* ==========================
+   Report & Analysis Area Styles
+   ========================== */
+.report-container { margin-top: 2rem; padding: 1.5rem; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; }
+.report-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.report-controls h2 { margin: 0; }
+.report-content { background-color: #fff; padding: 1.5rem; border-radius: 5px; border: 1px solid #dee2e6; margin-bottom: 1.5rem; white-space: pre-wrap; word-wrap: break-word; font-size: 1rem; color: #212529; }
+.report-content h2, .report-content h3, .report-content h4 { text-align: left; color: #343a40; margin-top: 1.5em; margin-bottom: 0.8em; border-bottom: 1px solid #eee; padding-bottom: 0.3em; }
+.report-content h2 { font-size: 1.3rem; } .report-content h3 { font-size: 1.15rem; }
+.report-content ul, .report-content ol { margin-left: 25px; margin-bottom: 1em; padding-left: 1em;}
+
+/* --- Chart Area --- */
+.charts-area { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px dashed #ced4da; }
+.charts-area h3, .charts-area h4 { text-align: left; margin-bottom: 1.5rem; color: #495057; font-size: 1.2rem; }
+.chart-container { max-width: 95%; height: 350px; margin: 1.5rem auto; padding: 1rem; background: #fff; border: 1px solid #dee2e6; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); position: relative; }
+.chart-container canvas { max-width: 100%; max-height: 100%; }
+#noChartsMessage, #noConstructionChartsMessage { text-align: center; font-style: italic; color: #6c757d; padding: 1rem; display: none; }
+
+
+/* ==========================
+   Chat Styles (Shared for Report & Dashboard)
+   ========================== */
+.chat-container, .dashboard-chat-section { margin-top: 2.5rem; }
+.dashboard-chat-section h3 { color: #0056b3; border-bottom-color: #dee2e6; margin-bottom: 1rem;}
+.chat-container { border: 1px solid #ced4da; border-radius: 8px; background-color: #f8f9fa; display: flex; flex-direction: column; height: 500px; overflow: hidden; }
+.chat-container h3 { padding: 0.8rem 1rem; margin: 0; background-color: #e9ecef; border-bottom: 1px solid #ced4da; font-size: 1.1rem; text-align: left; color: #495057; }
+.chat-messages { flex-grow: 1; overflow-y: auto; padding: 1rem; background-color: #fff; border-bottom: 1px solid #e9ecef; scroll-behavior: smooth; /* Added for smooth scroll */ }
+.message { margin-bottom: 10px; padding: 8px 14px; border-radius: 18px; max-width: 80%; word-wrap: break-word; line-height: 1.4; font-size: 0.95rem; animation: fadeInMessage 0.3s ease-out; /* Apply fade-in */ }
+.message.user { background-color: #cce5ff; color: #004085; margin-left: auto; border-bottom-right-radius: 5px; text-align: left; }
+.message.ai { background-color: #e2e3e5; color: #383d41; margin-right: auto; border-bottom-left-radius: 5px; text-align: left; }
+.message.system { font-style: italic; color: #6c757d; text-align: center; background-color: transparent; max-width: 100%; font-size: 0.9em; padding: 5px 0; animation: none; /* No fade for system messages */ }
+.typing-indicator { display: none; padding: 5px 15px; font-style: italic; color: #6c757d; font-size: 0.9em; display: flex; align-items: center; }
+.dot-flashing { position: relative; width: 6px; height: 6px; border-radius: 50%; background-color: #6c757d; color: #6c757d; animation: dot-flashing 1s infinite linear alternate; animation-delay: .5s; margin-left: 8px; }
+.dot-flashing::before, .dot-flashing::after { content: ''; display: inline-block; position: absolute; top: 0; }
+.dot-flashing::before { left: -10px; width: 6px; height: 6px; border-radius: 50%; background-color: #6c757d; color: #6c757d; animation: dot-flashing 1s infinite alternate; animation-delay: 0s; }
+.dot-flashing::after { left: 10px; width: 6px; height: 6px; border-radius: 50%; background-color: #6c757d; color: #6c757d; animation: dot-flashing 1s infinite alternate; animation-delay: 1s; }
+@keyframes dot-flashing { 0% { background-color: #6c757d; } 50%, 100% { background-color: rgba(108, 117, 125, 0.3); } }
+@keyframes fadeInMessage { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.chat-input-area { display: flex; padding: 0.8rem; border-top: 1px solid #e9ecef; background-color: #f8f9fa; gap: 0.8rem; }
+.chat-input-area input[type="text"] { flex-grow: 1; padding: 0.75rem 1rem; border: 1px solid #ced4da; border-radius: 20px; font-size: 1rem; }
+.chat-input-area input[type="text"]:disabled { background-color: #e9ecef; cursor: not-allowed; }
+#chatError { font-size: 0.9em; margin: 0 10px 10px 10px; padding: 0.5rem 1rem; color: #664d03; background-color: #fff3cd; border-color: #ffecb5; }
+
+
+/* ==========================
+   Loading Indicator
+   ========================== */
+.loading-indicator { padding: 1rem 1.25rem; border-radius: 5px; margin-bottom: 1rem; border: 1px solid transparent; font-size: 1rem; font-weight: 500; background-color: #cff4fc; color: #055160; border-color: #b6effb; display: none; align-items: center; justify-content: center; text-align: center; }
+.spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 20px; height: 20px; border-radius: 50%; border-left-color: #055160; animation: spin 1s ease infinite; margin-left: 10px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* ==========================
+   Agent Page Specific Styles
+   ========================== */
+.agent-container { max-width: 800px; margin: 2rem auto; background-color: #fff; padding: 2rem 2.5rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); border: 1px solid #dee2e6; transition: box-shadow 0.3s ease; }
+.agent-title { text-align: center; margin-bottom: 0.5rem; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; gap: 0.75rem; }
+.agent-title i { font-size: 1.5rem; }
+.agent-description { text-align: center; color: #495057; margin-bottom: 1.5rem; font-size: 1.05rem; }
+.agent-description strong { color: #dc3545; }
+.agent-divider { border: none; border-top: 1px dashed #ced4da; margin: 2rem 0; }
+.agent-panel { border: none; padding: 0; background: none; box-shadow: none; }
+.agent-output { margin-top: 1rem; padding: 1.2rem; border-radius: 5px; border: 1px solid #dbe4ee; min-height: 120px; white-space: pre-wrap; font-size: 1rem; color: #212529; transition: background-color 0.3s ease; background-color: #f0f4f8; }
+.agent-output:hover { background-color: #e9eef3; }
+.agent-output p:first-child { margin-top: 0; }
+.agent-output i { color: #6c757d; }
+.agent-back-link { margin-top: 2rem; font-size: 0.95rem; }
+/* Healthcare Agent */
+.healthcare-agent-container .agent-title { color: #198754; }
+.healthcare-agent-container .btn-agent-ask { background-color: #198754; border-color: #198754; }
+#healthcareAgentOutput { background-color: #e9f5ec; border-color: #c3e6cb; }
+#healthcareAgentOutput:hover { background-color: #ddeee3; }
+#healthcareAgentError { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; text-align: left;}
+#healthcareAgentLoading { margin-bottom: 1rem; }
+/* Construction Agent */
+.construction-agent-container .agent-title { color: #fd7e14; }
+.construction-agent-container .btn-agent-ask { background-color: #fd7e14; border-color: #fd7e14; }
+#constructionAgentOutput { background-color: #fff8e1; border-color: #ffecb5; color: #5c4603; }
+#constructionAgentOutput:hover { background-color: #f7f0cc; }
+#constructionDataContext { font-family: monospace; font-size: 0.9em; min-height: 150px;}
+#constructionAgentError { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; text-align: left;}
+#constructionAgentLoading { margin-bottom: 1rem; }
+/* Education Agent */
+.education-agent-container .agent-title { color: #0d6efd; }
+.education-agent-container .btn-agent-ask { background-color: #0d6efd; border-color: #0d6efd; }
+#educationAgentOutput { background-color: #e7f1ff; border-color: #cce0ff; }
+#educationAgentOutput:hover { background-color: #dae7fc; }
+#educationAgentError { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; text-align: left;}
+#educationAgentLoading { margin-bottom: 1rem; }
+
+
+/* ==========================
+   Responsiveness
+   ========================== */
+@media (max-width: 768px) {
+    .landing-hero h1 { font-size: 2.2rem; }
+    .landing-hero .subtitle { font-size: 1.1rem; }
+    .landing-section { padding: 2rem 1rem; }
+    .landing-section h2 { font-size: 1.8rem; }
+    .features-grid { grid-template-columns: 1fr; }
+    .main-header { flex-direction: column; gap: 0.5rem; }
+    .landing-nav { margin-top: 0.5rem; }
+    .dashboard-layout { flex-direction: column; }
+    .sidebar { flex: 1 1 auto; width: 100%; margin-bottom: 1.5rem; }
+    .main-dashboard-content { padding: 1.5rem; } /* Reduce padding */
+}
+
+@media (max-width: 576px) {
+    body { font-size: 15px; } /* Slightly smaller base font */
+    .landing-hero { padding: 3rem 1rem; clip-path: none; margin-top: 0;}
+    .landing-hero h1 { font-size: 1.8rem; }
+    .landing-hero .subtitle { font-size: 1rem; }
+    .btn-hero { padding: 0.7rem 1.8rem; font-size: 1rem; }
+    .auth-form { padding: 1.5rem; }
+    .main-container { padding: 0 1rem; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.4rem; }
+    .chat-input-area { flex-direction: column; gap: 0.5rem; } /* Stack chat input/button */
+    .chat-input-area button { width: 100%; }
+    .sidebar { flex-basis: auto; width: 100%; } /* Full width sidebar */
+    .dashboard-layout { gap: 1rem; }
+    .main-dashboard-content { padding: 1rem; }
+}

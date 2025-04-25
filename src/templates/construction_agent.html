@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Construction AI Assistant{% endblock %}
+
+{% block head_extra %}
+    {# Load Chart.js - IMPORTANT #}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    {# <link rel="stylesheet" href="{{ url_for('static', filename='consagent.css') }}"> #}
+{% endblock %}
+
+{% block content %}
+<div class="agent-container construction-agent-container">
+    <h2 class="agent-title"><i class="fas fa-hard-hat"></i> Construction AI Assistant</h2>
+    <p class="agent-description">
+        Provide project context or sales data below, then ask specific questions, request analysis,
+        or ask the AI to suggest tasks based on the information.
+    </p>
+    <hr class="agent-divider">
+
+    <div id="content-construction" class="content-panel agent-panel">
+        {# Context Input #}
+        <div class="form-group">
+            <label for="constructionDataContext">Data Context (Optional):</label>
+            <textarea id="constructionDataContext" rows="8" class="form-control" placeholder="Paste relevant project details, budget excerpts, sales figures..."></textarea>
+            <small class="form-text text-muted">Provide context related to your query.</small>
+        </div>
+
+        {# Query Input #}
+        <div class="form-group">
+            <label for="constructionQueryInput">Your Query or Task Request:</label>
+            <textarea id="constructionQueryInput" rows="4" class="form-control" placeholder="e.g., Compare budget vs actual for Phase 1..."></textarea>
+        </div>
+
+        <button id="submitConstructionQueryBtn" class="btn btn-primary btn-agent-ask">
+            <i class="fas fa-cogs"></i> Analyze / Request Task
+        </button>
+
+        <div id="constructionAgentLoading" class="loading-indicator mt-3" style="display: none;">
+            <span>Analyzing...</span><div class="spinner"></div>
+        </div>
+        <div id="constructionAgentError" class="error-message mt-3" style="display: none;"></div>
+
+        {# --- Response Area --- #}
+        <div class="mt-4 agent-response-area">
+             <h4>AI Analysis / Task Suggestions:</h4>
+             <div id="constructionAgentOutput" class="agent-output construction-output">
+                 <p><i>The AI's insights or suggested tasks will appear here.</i></p>
+             </div>
+        </div>
+
+        {# --- **NEW** Chart Display Area --- #}
+        <div id="constructionChartsArea" class="charts-area mt-4" style="display: none;"> {# Initially hidden #}
+            <h4>Data Visualizations:</h4>
+            {# Container for Budget Comparison Chart #}
+            <div id="budgetChartContainer" class="chart-container" style="display: none;">
+                 <canvas id="budgetChart"></canvas>
+            </div>
+             {# Container for Timeline Progress Chart #}
+             <div id="timelineChartContainer" class="chart-container" style="display: none;">
+                 <canvas id="timelineChart"></canvas>
+             </div>
+             {# Container for Sales by Region Chart #}
+             <div id="salesRegionChartContainer" class="chart-container" style="display: none;">
+                 <canvas id="salesRegionChart"></canvas>
+             </div>
+             {# Add more canvas elements for other potential charts #}
+             <p id="noConstructionChartsMessage" style="display: none;">No specific data for visualization identified in the response.</p>
+        </div>
+        {# --- END Chart Display Area --- #}
+
+    </div> {# End content-panel #}
+
+    <p class="mt-4 text-center agent-back-link"><a href="{{ url_for('core.dashboard') }}">« Back to Dashboard</a></p>
+
+</div> {# End agent-container #}
+{% endblock %}
+
+{% block scripts %}
+    {# Load Font Awesome if using icons #}
+    {# <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script> #}
+    {# Link specific JS for this page #}
+    <script type="module" src="{{ url_for('static', filename='construction_agent.js') }}"></script>
+{% endblock %}

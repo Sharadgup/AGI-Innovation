@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Automatic Data Analyzer - Upload{% endblock %}
+
+{% block head_extra %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='data_analyzer.css') }}">
+{% endblock %}
+
+
+{% block content %}
+<div class="container mt-4">
+    <h1><i class="fas fa-upload"></i> Automatic Data Analyzer</h1>
+    <p class="lead">Upload your .xlsx or .csv file to begin analysis.</p>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Upload Data File</h5>
+            <div class="mb-3">
+                <label for="analysisFile" class="form-label">Select file (.xlsx, .csv):</label>
+                <input type="file" id="analysisFile" name="analysisFile" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+            </div>
+            <button id="uploadButton" class="btn btn-primary">
+                <i class="fas fa-cloud-upload-alt"></i> Upload and Analyze
+            </button>
+             <div id="loadingIndicator" style="display: none;" class="mt-2">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Uploading and processing...
+            </div>
+        </div>
+    </div>
+
+    <div id="upload-feedback" class="alert" role="alert" style="display: none;">
+        <!-- Feedback messages appear here -->
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='data_analyzer.js') }}" defer></script>
+{% endblock %}

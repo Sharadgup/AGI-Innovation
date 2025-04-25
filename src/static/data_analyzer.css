@@ -1,0 +1,132 @@
+/* General Styles */
+.container, .container-fluid {
+    margin-bottom: 50px; /* Ensure space at bottom */
+}
+
+.card {
+    margin-bottom: 1.5rem;
+}
+
+.panel {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem; /* Bootstrap's default radius */
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background-color: #f8f9fa;
+    position: relative; /* For loading overlay positioning */
+}
+
+.panel h5, .panel h6 {
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    font-weight: 500; /* Slightly bolder */
+}
+
+.panel h6 {
+    font-size: 0.95rem;
+    color: #495057;
+}
+
+
+/* Loading Indicators */
+#loadingIndicator .spinner-border,
+.loading-overlay .spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.375rem; /* Match panel radius */
+}
+
+/* Feedback */
+#upload-feedback.alert {
+    margin-top: 1rem;
+}
+#cleaning-feedback {
+    min-height: 1.2em; /* Reserve space for feedback */
+}
+
+/* Cleaner Page Specifics */
+#data-preview-table {
+    height: 450px;
+    border: 1px solid #ccc;
+    margin-bottom: 1rem;
+    width: 100%; /* Ensure table takes full width */
+}
+
+/* Style Tabulator header filters */
+.tabulator-col .tabulator-header-filter input {
+    padding: 4px;
+    font-size: 0.8rem;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+}
+
+#column-info-list {
+    max-height: 250px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+}
+#column-info-list .list-group-item {
+    padding: 0.5rem 0.75rem;
+}
+
+.action-group {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px dashed #ccc;
+}
+.action-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+#analysis-results,
+#insights-output {
+    white-space: pre-wrap;
+    background-color: #f1f3f5;
+    padding: 10px 15px;
+    border-radius: 4px;
+    max-height: 350px;
+    overflow-y: auto;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-size: 0.85rem;
+    border: 1px solid #e0e0e0;
+}
+#insights-output ul {
+    padding-left: 0;
+    margin-bottom: 0;
+}
+#insights-output li {
+    margin-bottom: 0.4rem;
+    line-height: 1.4;
+}
+
+#plot-output {
+    min-height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+    color: #6c757d; /* Bootstrap muted color */
+    background-color: #fff;
+}
+
+/* History Page */
+.table th, .table td {
+    vertical-align: middle;
+}

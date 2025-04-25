@@ -1,0 +1,46 @@
+{% extends "base.html" %} {# Assumes base.html exists #}
+
+{% block title %}Education AI Assistant{% endblock %}
+
+{% block head_extra %}
+    {# Add specific CSS for this agent if needed #}
+    {# <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> #}
+{% endblock %}
+
+{% block content %}
+<div class="agent-container"> {# Use a general container class #}
+    <h2>Education AI Assistant 🎓</h2>
+    <p>Ask educational questions, request explanations, or summarize topics below. Your conversation is specific to this session.</p>
+    <hr>
+
+    <div id="content-education" class="content-panel"> {# Re-use content-panel class #}
+        <div class="form-group">
+            <label for="educationQueryInput">Your Question:</label>
+            <textarea id="educationQueryInput" rows="5" class="form-control" placeholder="e.g., Explain the theory of relativity in simple terms. What is the capital of Australia? Summarize the plot of Hamlet."></textarea>
+        </div>
+        <button id="submitEducationQueryBtn" class="btn btn-primary">Ask Agent</button>
+
+        <div id="educationAgentLoading" class="loading-indicator mt-3" style="display: none;">
+            <span>Thinking...</span><div class="spinner"></div>
+        </div>
+        <div id="educationAgentError" class="error-message mt-3" style="display: none;"></div> {# Specific error display #}
+
+        <div class="mt-4"> {# Add spacing #}
+             <h4>Answer:</h4>
+             <div id="educationAgentOutput" class="agent-output">
+                 <p><i>The AI's answer will appear here once you ask a question.</i></p>
+             </div>
+        </div>
+    </div>
+
+    {# Link back to dashboard #}
+    <p class="mt-4 text-center"><a href="{{ url_for('core.dashboard') }}">« Back to Dashboard</a></p>
+
+</div> {# End agent-container #}
+{% endblock %}
+
+{% block scripts %}
+    {# Link the specific JavaScript for THIS Education Agent page #}
+    {# Load Firebase init first if education_agent.js needs it #}
+    <script type="module" src="{{ url_for('static', filename='education.js') }}"></script>
+{% endblock %}

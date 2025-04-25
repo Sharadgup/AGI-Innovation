@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}News AI Agent{% endblock %}
+
+{% block head_extra %}
+    {# Make sure this CSS file exists and is correct #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='news_agent.css') }}">
+    {# Add Font Awesome if not already in base.html for icons #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="news-agent-container container-fluid mt-4"> {# Use fluid for full width #}
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="news-agent-title"><i class="fas fa-newspaper"></i> News AI Agent</h1>
+        <div>
+             <button id="theme-toggle-btn" class="btn btn-sm btn-outline-secondary">
+                 <i class="fas fa-sun"></i> / <i class="fas fa-moon"></i>
+             </button>
+             {# Add filter controls if desired (Country, Category) #}
+             {# <select id="news-country-filter"><option value="us">US</option>...</select> #}
+        </div>
+    </div>
+
+
+    <div class="row g-3"> {# Gutters for spacing #}
+
+        <!-- Main Content Area (Left/Center) -->
+        <div class="col-lg-8">
+            <div id="main-news-display" class="main-news-display-area wavy-background">
+                <div id="main-news-content" class="p-3">
+                     {# News content will be loaded here by JS #}
+                     <p class="placeholder-text">Fetching latest news...</p>
+                </div>
+                <div class="main-news-controls p-2 text-end bg-light border-top" style="display: none;">
+                     <button id="summarize-read-btn" class="btn btn-primary btn-sm" disabled>
+                        <i class="fas fa-compress-alt"></i> Summarize & Read
+                    </button>
+                     <button id="stop-reading-btn" class="btn btn-danger btn-sm" style="display: none;">
+                        <i class="fas fa-stop-circle"></i> Stop Reading
+                    </button>
+                </div>
+                 <div id="mainNewsLoading" class="loading-overlay-main" style="display: none;">
+                    <span class="spinner-border text-primary" role="status"></span><span class="ms-2">Loading News...</span>
+                 </div>
+                 <div id="summaryLoading" class="loading-overlay-main" style="display: none;">
+                    <span class="spinner-border text-info" role="status"></span><span class="ms-2">Summarizing...</span>
+                 </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="col-lg-4">
+            <div class="right-sidebar">
+                <h5><i class="fas fa-bell"></i> Live Notifications</h5>
+                <div id="notification-panel" class="notification-panel">
+                    {# Notifications will be added here by JS #}
+                    <p class="text-muted small p-2">Waiting for news updates...</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Section -->
+    <div class="bottom-tracker fixed-bottom bg-dark text-white p-2">
+        <span id="status-update" class="status-update me-3">Status: Initializing...</span> |
+        <span id="live-headlines" class="live-headlines ms-3"><strong></strong></span>
+    </div>
+
+    {# Hidden template for notification items #}
+    <template id="notification-template">
+        <div class="notification-item mb-2">
+            <small class="notification-source text-muted"></small>
+            <p class="notification-title fw-bold mb-1"></p>
+            <small class="notification-time text-muted"></small>
+        </div>
+    </template>
+
+</div>
+{% endblock %}
+
+{# Ensure this block name matches your base.html template #}
+{% block scripts %}
+    {# Pass availability status to JS #}
+   <script>
+       // eslint-disable-next-line -- Optional: Add linter ignore comment
+       const NEWS_API_AVAILABLE =  news_api_available|tojson ; 
+    </script>
+   {# Ensure defer attribute is present for proper script execution order #}
+   <script src="{{ url_for('static', filename='news_agent.js') }}" defer></script>
+
+{% endblock scripts %}

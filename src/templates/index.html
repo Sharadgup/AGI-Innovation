@@ -1,0 +1,95 @@
+{% extends "base.html" %} {# Assumes base.html exists #}
+
+{% block title %}AI Note Taker & Analyzer{% endblock %}
+
+{% block head_extra %}
+    <!-- Load necessary libraries FIRST -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    {# Load Socket.IO client library (Choose ONE method) #}
+    {# Option A: CDN #}
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
+    {# Option B: Flask-SocketIO served #}
+    {# <script src="/socket.io/socket.io.js"></script> #}
+{% endblock %}
+
+
+{% block content %}
+    {# Main heading for the page #}
+    <h1>AI Note Taker & Analyzer</h1>
+    <p>Enter text below to generate a report and chat about it.</p>
+
+    <!-- Input Area: Where the user enters text -->
+    <div class="input-area form-group">
+        <label for="inputText">Input Text:</label>
+        <textarea id="inputText" rows="10" placeholder="Paste or type your text here..." class="form-control"></textarea>
+        <button id="generateBtn" class="btn btn-primary btn-block mt-2">✨ Generate Report</button>
+    </div>
+
+    <!-- Loading / Error Messages -->
+    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+        <span id="loadingText">Loading...</span>
+        <div class="spinner"></div>
+    </div>
+    <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+    <!-- Report Display Area: Initially hidden -->
+    <div id="reportContainer" style="display: none;" class="report-container mt-4">
+        <div class="report-controls mb-3">
+             <h2>Generated Report</h2>
+             <button id="downloadPdfBtn" class="btn btn-success">Download PDF</button>
+        </div>
+        <div id="reportOutput" class="report-content"></div>
+         <div class="charts-area mt-4">
+             <h3>Data Visualizations</h3>
+             <div id="keywordChartContainer" class="chart-container" style="display: none;"><canvas id="keywordChart"></canvas></div>
+             <div id="sentimentChartContainer" class="chart-container" style="display: none;"><canvas id="sentimentChart"></canvas></div>
+             <p id="noChartsMessage" style="display: none;">No relevant data found for charts.</p>
+         </div>
+    </div>
+
+    <!-- Report-Specific Chat Area: Initially hidden -->
+    <div id="chatContainer" class="chat-container mt-4" style="display: none;">
+        <h3>Chat About This Report</h3>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div id="typingIndicator" class="typing-indicator" style="display: none;">AI is thinking...<span class="dot-flashing"></span></div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Ask a question about the report..." disabled>
+            <button id="sendChatBtn" class="btn btn-secondary" disabled>Send</button>
+        </div>
+    </div>
+
+    {# --- START: Added Dashboard General Chat Section --- #}
+    {% if session.user_id %} {# Only render if user is logged in #}
+        <section class="dashboard-section dashboard-chat-section mt-4" id="general-chat-section">
+            <h3>General Chat 💬</h3>
+            <p>Ask general questions here (not specific to the report above).</p>
+            {# Use DIFFERENT IDs #}
+            <div id="dashboardChatMessages" class="chat-messages">
+                <div class="message system">Connecting to general chat...</div>
+            </div>
+            <div id="dashboardTypingIndicator" class="typing-indicator" style="display: none;">
+                AI is thinking...<span class="dot-flashing"></span> {# Use correct class #}
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="dashboardChatInput" placeholder="Ask a general question..." disabled>
+                <button id="sendDashboardChatBtn" class="btn btn-secondary" disabled>Send</button>
+            </div>
+             <div id="dashboardChatError" class="error-message" style="display: none;"></div> {# Dedicated error div #}
+        </section>
+    {% endif %}
+    {# --- END: Added Dashboard General Chat Section --- #}
+
+{% endblock %}
+
+{% block scripts %}
+    <!-- Load JS for Report Generation/Chat (Firebase Init is inside) -->
+    <script type="module" src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <!-- Load JS for the DASHBOARD CHAT (conditionally) -->
+    {% if session.user_id %}
+        {# *** CORRECTED FILENAME HERE *** #}
+        <script type="module" src="{{ url_for('static', filename='js/dashboard_chat_init.js') }}"></script>
+        {# Use the separate file created previously for dashboard chat init/listeners #}
+    {% endif %}
+{% endblock %}

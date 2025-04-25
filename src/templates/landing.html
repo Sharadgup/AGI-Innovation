@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision AI Studio - Automated Solutions</title>
+    
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}">
+    
+    <!-- Add links to animation libraries (GSAP, Three.js, Lottie, etc.) here if needed -->
+</head>
+<body>
+    <header class="landing-header">
+        <nav class="navbar">
+            <div class="logo animated-logo">
+                <!-- Placeholder for animated logo -->
+                <a href="#home">Vision AI Studio</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#content">Content</a></li>
+                <li><a href="#api">API</a></li>
+                <li><a href="#project">Project</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero-section">
+            <!-- Video Background -->
+            <div class="animated-video-background">
+                 <!-- Example using a local video file -->
+                 <video autoplay muted loop playsinline>
+                    <source src="{{ url_for('static', filename='video/landing_background.mp4') }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                 </video>
+            </div>
+
+            <!-- Content Overlay -->
+            <div class="hero-content">
+                <h1>Welcome to VisionAI</h1>
+                <p>Automating the future with intelligent vision.</p>
+               <!-- TO THIS -->
+               <a href="{{ url_for('auth.login') }}" class="cta-button">Get Started</a>
+            </div>
+        </section>
+
+        <section id="about" class="content-section">
+            <h2>About Us</h2>
+            <p>We specialize in creating cutting-edge AI solutions that leverage computer vision for automation across various industries.</p>
+            <!-- Add more detailed content -->
+        </section>
+
+        <section id="content" class="content-section alt-bg">
+            <h2>Content & Features</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <h3>Feature 1</h3>
+                    <p>Description of feature 1 with potential hover effect.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Feature 2</h3>
+                    <p>Description of feature 2 with potential hover effect.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Feature 3</h3>
+                    <p>Description of feature 3 with potential hover effect.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="api" class="content-section">
+            <h2>API Details</h2>
+            <p>Integrate our powerful vision capabilities into your own applications with our robust API.</p>
+            <!-- Add API documentation links or details -->
+            <pre><code>// Example API usage
+vision.detect("image.jpg").then(results => {
+    console.log(results);
+});</code></pre>
+        </section>
+
+        <section id="project" class="content-section alt-bg">
+            <h2>Project Details</h2>
+            <p>Explore the specifics of our flagship automation project.</p>
+            <!-- Add project specifics, case studies, etc. -->
+        </section>
+    </main>
+
+    <footer class="landing-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#api">API</a></li>
+                     <li><a href="#project">Project</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p>Email: shardgupta65@gmail.com</p>
+                <p>Phone: +91-9617173355</p>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <!-- Add social media links/icons -->
+                <a href="https://www.linkedin.com/in/shardgupta2024/">LinkedIn</a> | <a href="https://x.com/sharadG75546208">X.com</a> | <a href="https://github.com/Sharadgup">Github Profile</a> | <a href="https://portfolio-website-zeta-tan-46.vercel.app/">Portfolio Website</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 VisionAI. All rights reserved.</p>
+            <!-- Animated elements or effects can be added here -->
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='landing.js') }}"></script>
+</body>
+</html>

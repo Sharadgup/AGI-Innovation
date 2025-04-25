@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Vision AI Studio{% endblock %}</title>
+
+    {# Google Fonts - Poppins #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    {# Link main CSS file #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    {# Block for extra head elements (like page-specific CSS or JS libraries) #}
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    {# --- Header with Animated Navbar --- #}
+    <header class="main-header">
+        {# Added a container for better centering and spacing #}
+        <div class="header-container">
+            <div class="logo">
+                <a href="{{ url_for('core.landing_page') }}">🚀 Vision AI Studio</a> {# Changed icon #}
+            </div>
+            <nav class="main-nav">
+                {% if session.user_id %}
+                    {# Navigation for logged-in users #}
+                    {# Apply nav-link class for consistent styling #}
+                    <span class="welcome-user">Welcome, {{ session.username }}!</span>
+                    <a href="{{ url_for('core.dashboard') }}" class="nav-link">Dashboard</a>
+                    <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
+                {% else %}
+                    {# Navigation for logged-out users #}
+                    {# Apply nav-link class for consistent styling #}
+                    <a href="{{ url_for('auth.login') }}" class="nav-link">Login</a>
+                    <a href="{{ url_for('auth.register') }}" class="nav-link">Register</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    {# --- Main Content Area --- #}
+    <main class="main-container">
+        {# Display Flask flash messages #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages-container">
+                {% for category, message in messages %}
+                    {# Use more specific classes like success, error, info, warning #}
+                    <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {# Main content area for child templates #}
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {# --- Footer --- #}
+    <footer class="main-footer">
+        {# Pass 'now' from Flask context or use fallback #}
+        <p>© {% if now %}{{ now.year }}{% else %}{{ current_year or '2024' }}{% endif %} AI Assistant Inc. All rights reserved.</p>
+    </footer>
+
+    {# --- Global JS Libraries (Load before page-specific scripts if needed) --- #}
+    {# Example: <script src="..."></script> #}
+
+    {# --- Block for page-specific JavaScript files --- #}
+    {% block scripts %}{% endblock %}
+</body>
+</html>

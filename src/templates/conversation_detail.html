@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Conversation Details{% endblock %}
+
+{% block head_extra %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/conversation_detail.css') }}">
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+     <style>
+        .detail-container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .message-log { max-height: 60vh; overflow-y: auto; border: 1px solid #eee; padding: 15px; border-radius: 5px; background-color: #f8f9fa; margin-bottom: 20px;}
+        .message-item { margin-bottom: 12px; padding: 8px 12px; border-radius: 15px; max-width: 80%; word-wrap: break-word; line-height: 1.4; }
+        .message-item.user { background-color: #e7f0ff; color: #001f3f; margin-left: auto; border-bottom-right-radius: 5px; }
+        .message-item.ai { background-color: #e8f5e9; color: #004d40; margin-right: auto; border-bottom-left-radius: 5px; }
+        .message-meta { font-size: 0.75em; color: #888; margin-top: 3px; text-align: right; }
+        .message-item.ai .message-meta { text-align: left; }
+        .back-link { margin-top: 15px; display: inline-block; color: #007bff; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+     </style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <h2>Conversation Details</h2>
+    <p>Started:
+        {% if conversation.start_timestamp %}
+             {{ conversation.start_timestamp.strftime('%Y-%m-%d %H:%M:%S %Z') if conversation.start_timestamp.tzinfo else conversation.start_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+             Unknown
+        {% endif %}
+    </p>
+    <hr>
+
+     <a href="{{ url_for('history_page') }}" class="back-link"><i class="fas fa-arrow-left"></i> Back to History</a>
+
+    <div class="message-log">
+        {% if conversation.messages %}
+            {% for message in conversation.messages %}
+                <div class="message-item {{ message.role }}">
+                    <div class="message-text">{{ message.text }}</div>
+                    <div class="message-meta">
+                         <i class="fas fa-clock"></i>
+                         {% if message.timestamp %}
+                            {{ message.timestamp.strftime('%H:%M:%S') }}
+                         {% endif %}
+                         {% if message.lang %}
+                            | <i class="fas fa-language"></i> {{ message.lang }}
+                         {% endif %}
+                     </div>
+                 </div>
+            {% endfor %}
+        {% else %}
+            <p>No messages found in this conversation.</p>
+        {% endif %}
+    </div>
+
+
+</div>
+{% endblock %}

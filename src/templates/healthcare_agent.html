@@ -1,0 +1,56 @@
+{% extends "base.html" %} {# Assumes base.html exists #}
+
+{% block title %}Healthcare AI Assistant{% endblock %}
+
+{% block head_extra %}
+    {# Add specific CSS for this agent if needed later #}
+    {# <link rel="stylesheet" href="{{ url_for('static', filename='agent.css') }}"> #}
+{% endblock %}
+
+{% block content %}
+<div class="agent-container healthcare-agent-container"> {# Added healthcare specific class #}
+    <h2 class="agent-title"><i class="fas fa-heartbeat"></i> Healthcare AI Assistant</h2> {# Added Font Awesome icon example #}
+    <p class="agent-description">
+        Ask general health questions, inquire about symptoms (for informational purposes only),
+        or get wellness tips.
+        <br><strong>Disclaimer:</strong> This tool provides general information and is not a substitute
+        for professional medical advice, diagnosis, or treatment. Always seek the advice of your
+        physician or other qualified health provider with any questions you may have regarding a
+        medical condition.
+    </p>
+    <hr class="agent-divider">
+
+    <div id="content-healthcare" class="content-panel agent-panel">
+        <div class="form-group">
+            <label for="healthcareQueryInput">Your Health Query:</label>
+            <textarea id="healthcareQueryInput" rows="5" class="form-control" placeholder="e.g., What are common allergy symptoms? Explain how vaccines work. Suggest tips for better sleep..."></textarea>
+        </div>
+        <button id="submitHealthcareQueryBtn" class="btn btn-primary btn-agent-ask">
+            <i class="fas fa-paper-plane"></i> Ask Healthcare Agent
+        </button>
+
+        <div id="healthcareAgentLoading" class="loading-indicator mt-3" style="display: none;">
+            <span>Analyzing...</span><div class="spinner"></div>
+        </div>
+        <div id="healthcareAgentError" class="error-message mt-3" style="display: none;"></div> {# Specific error display #}
+
+        <div class="mt-4 agent-response-area"> {# Added wrapper class #}
+             <h4>AI Information:</h4>
+             <div id="healthcareAgentOutput" class="agent-output healthcare-output">
+                 <p><i>The AI's informational response will appear here. Remember to consult a professional for medical advice.</i></p>
+             </div>
+        </div>
+    </div>
+
+    {# Link back to dashboard #}
+    <p class="mt-4 text-center agent-back-link"><a href="{{ url_for('core.dashboard') }}">« Back to Dashboard</a></p>
+
+</div> {# End agent-container #}
+{% endblock %}
+
+{% block scripts %}
+    {# Load Font Awesome if using icons (optional) #}
+    {# <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script> #}
+    {# Link the specific JavaScript for THIS Healthcare Agent page #}
+    <script type="module" src="{{ url_for('static', filename='healthcare_agent.js') }}"></script>
+{% endblock %}

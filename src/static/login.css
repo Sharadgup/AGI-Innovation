@@ -1,0 +1,416 @@
+/* src/static/login.css */
+
+/* Ensure container uses the space left by the navbar */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 65px); /* Full height minus navbar height (adjust if needed) */
+    padding: 50px 20px;
+    background-color: #111827; /* Match base */
+    /* Optional: Add a subtle animated gradient background */
+    background: linear-gradient(-45deg, #111827, #1f2937, #111827, #374151);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+	0% { background-position: 0% 50%; }
+	50% { background-position: 100% 50%; }
+	100% { background-position: 0% 50%; }
+}
+
+/* Wrapper for potential glow effect */
+.login-box-wrapper {
+    position: relative;
+    z-index: 1;
+}
+
+/* Add a subtle interactive glow to the wrapper */
+.login-box-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: -3px; /* Control glow size */
+    background: linear-gradient(45deg, #14B8A6, #8B5CF6, #ec4899);
+    filter: blur(10px); /* Adjust blur intensity */
+    border-radius: 15px; /* Slightly larger than box */
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.login-box-wrapper:hover::before {
+     opacity: 0.6; /* Make glow visible on hover */
+}
+
+
+/* The styled box containing the form */
+.login-box {
+    background-color: rgba(31, 41, 55, 0.9); /* Dark box background slightly transparent */
+    backdrop-filter: blur(5px); /* Subtle blur if background has detail */
+    padding: 40px 45px;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 430px; /* Slightly wider */
+    text-align: center;
+    border: 1px solid #374151; /* Subtle border */
+    position: relative; /* Needed for z-index if wrapper is used */
+    z-index: 2; /* Above the wrapper's glow */
+    overflow: hidden; /* Hide overflow for effects */
+    color: #F3F4F6; /* Ensure text is light */
+}
+
+/* Enhanced Entry Animation */
+@keyframes fadeInSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.animated-entry {
+    /* Apply animation - ensure it starts visible or manage via JS */
+     opacity: 0; /* Start invisible */
+     animation: fadeInSlideUp 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards; /* Added delay */
+     /* cubic-bezier for a slight overshoot effect */
+}
+
+
+.login-box h2 {
+    color: #FFFFFF;
+    margin-bottom: 10px;
+    font-size: 1.9rem; /* Slightly larger */
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px; /* Space between text and icon */
+}
+
+/* Key Icon Animation (User Provided) */
+.login-box h2 .icon {
+    font-size: 1.6rem;
+    display: inline-block;
+    animation: wave 2.5s infinite ease-in-out; /* Slightly adjusted timing */
+    transform-origin: bottom left; /* Better pivot for wave */
+}
+
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(15deg); }
+  40% { transform: rotate(-10deg); }
+  60% { transform: rotate(5deg); }
+  80% { transform: rotate(-5deg); }
+}
+
+
+.login-box .subtitle {
+    color: #9CA3AF;
+    margin-bottom: 35px;
+    font-size: 1rem;
+}
+
+/* Form Styling */
+.login-form {
+    margin-top: 25px;
+}
+
+.form-group {
+    margin-bottom: 22px;
+    text-align: left;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #D1D5DB;
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+/* Unified input class */
+.form-control {
+    width: 100%;
+    padding: 13px 18px; /* More padding */
+    border: 1px solid #4B5563;
+    border-radius: 8px;
+    background-color: #374151;
+    color: #F3F4F6;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #14B8A6; /* Teal focus border */
+    background-color: #414d5f; /* Slightly lighter focus bg */
+    box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.25); /* Teal focus glow */
+}
+
+/* Input Placeholder Style */
+.form-control::placeholder {
+    color: #6B7280;
+    font-size: 0.95rem;
+}
+
+/* Buttons Base */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 25px; /* Generous padding */
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease; /* Catch-all transition */
+    text-decoration: none;
+    width: 100%; /* Default width for buttons like primary */
+    box-sizing: border-box;
+    position: relative; /* For potential pseudo-elements */
+    overflow: hidden; /* For effects */
+}
+
+/* --- Primary Button Hover/Animation --- */
+.btn-primary {
+    background: linear-gradient(95deg, #14B8A6, #8B5CF6); /* Gradient */
+    color: #FFFFFF;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+}
+
+.btn-primary .btn-icon {
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-4px) scale(1.02); /* Lift and slight scale */
+    box-shadow: 0 8px 25px rgba(20, 184, 166, 0.35); /* Enhanced teal glow */
+    background: linear-gradient(95deg, #5EEAD4, #A78BFA); /* Lighter gradient */
+}
+
+.btn-primary:hover .btn-icon {
+    transform: translateX(5px); /* Move arrow slightly */
+}
+
+.btn-primary:active {
+    transform: translateY(-1px) scale(0.99); /* Press effect */
+    box-shadow: 0 3px 10px rgba(20, 184, 166, 0.2);
+}
+
+
+/* --- Google Button Hover --- */
+/* MODIFIED FOR SMALLER SIZE AND CENTERING */
+.btn-google {
+    background-color: #FFFFFF;
+    color: #374151;
+    border: 1px solid #D1D5DB;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    /* --- Start Modifications --- */
+    width: auto;          /* Override width: 100% from .btn */
+    display: inline-flex; /* Ensure it behaves like inline for text-align */
+    padding: 8px 18px;   /* Reduced padding for smaller size */
+    font-size: 0.9rem;    /* Reduced font size */
+    /* --- End Modifications --- */
+}
+
+.btn-google svg {
+    /* --- Start Modifications --- */
+    margin-right: 8px;    /* Slightly reduced margin */
+    width: 18px;          /* Explicit size */
+    height: 18px;         /* Explicit size */
+     /* --- End Modifications --- */
+}
+
+.btn-google:hover {
+    background-color: #f7f8fa;
+    border-color: #9CA3AF;
+    /* --- Start Modifications --- */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); /* Slightly reduced hover shadow */
+    transform: translateY(-2px); /* Slightly reduced lift */
+    /* --- End Modifications --- */
+}
+.btn-google:active {
+     transform: translateY(-1px);
+     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+
+/* Social Login Separator */
+.social-login-separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #818997; /* Adjusted color */
+    margin: 30px 0;
+}
+
+.social-login-separator::before,
+.social-login-separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #4B5563;
+}
+
+.social-login-separator span {
+    padding: 0 15px;
+    font-size: 0.8rem; /* Smaller OR text */
+    font-weight: 500;
+    line-height: 1;
+    text-transform: uppercase; /* Uppercase OR */
+}
+
+/* Container for Social Buttons - MODIFIED FOR CENTERING */
+.social-login-buttons {
+    margin-bottom: 25px; /* Space below button */
+    /* --- Start Modifications --- */
+    text-align: center; /* Center inline/inline-block/inline-flex children */
+    /* --- End Modifications --- */
+}
+
+
+/* Register Link */
+.register-link {
+    margin-top: 30px;
+    font-size: 0.9rem;
+    color: #9CA3AF;
+}
+
+.register-link a {
+    color: #5EEAD4; /* Lighter teal link */
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+    position: relative;
+    padding-bottom: 2px; /* Space for underline */
+}
+.register-link a::after { /* Subtle underline effect */
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    display: block;
+    margin-top: 2px;
+    right: 0;
+    background: #5EEAD4;
+    transition: width .3s ease;
+}
+
+.register-link a:hover {
+    color: #a7f3d0; /* Even lighter on hover */
+    text-shadow: 0 0 5px rgba(94, 234, 212, 0.5); /* Subtle glow */
+}
+.register-link a:hover::after {
+    width: 100%;
+    left: 0;
+    background: #a7f3d0;
+}
+
+
+/* Flash Messages Styling */
+.flash-messages {
+    margin-bottom: 20px;
+    padding: 0;
+    list-style: none;
+}
+
+.alert {
+    padding: 12px 18px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    text-align: left;
+    border: 1px solid transparent;
+    position: relative;
+    box-shadow: 0 3px 8px rgba(0,0,0, 0.1);
+}
+/* Adding subtle icons */
+.alert::before {
+    font-family: 'Arial'; /* Simple fallback */
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.alert-success {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #A7F3D0;
+    border-color: rgba(5, 150, 105, 0.4);
+}
+.alert-success::before { content: '✔'; } /* Checkmark */
+
+.alert-danger, .alert-error { /* Allow 'error' category */
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #FECACA;
+    border-color: rgba(220, 38, 38, 0.5);
+}
+.alert-danger::before, .alert-error::before { content: '✖'; } /* Cross mark */
+
+.alert-info {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #BFDBFE;
+    border-color: rgba(37, 99, 235, 0.5);
+}
+.alert-info::before { content: 'ℹ'; } /* Info icon */
+
+.alert-warning {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #FDE68A;
+    border-color: rgba(217, 119, 6, 0.5);
+}
+.alert-warning::before { content: '⚠'; } /* Warning icon */
+
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 30px 15px;
+         min-height: calc(100vh - 60px); /* Adjust if navbar height changes */
+    }
+    .login-box {
+        padding: 30px 25px;
+        margin: 15px 0;
+        max-width: 95%;
+    }
+    .login-box h2 {
+        font-size: 1.7rem;
+        gap: 8px;
+    }
+     .login-box h2 .icon {
+        font-size: 1.4rem;
+    }
+     .login-box .subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 25px;
+     }
+    .form-control {
+        padding: 12px 15px;
+        font-size: 0.95rem;
+    }
+    /* Responsive adjustment for base button padding */
+    .btn {
+        padding: 12px 20px; /* Smaller padding on small screens */
+        font-size: 0.95rem; /* Slightly smaller font on small screens */
+    }
+    /* Responsive adjustment for Google button padding */
+    .btn-google {
+        padding: 7px 16px; /* Even smaller padding on small screens */
+        font-size: 0.85rem; /* Smaller font */
+    }
+     .btn-google svg {
+        margin-right: 6px; /* Adjust SVG margin */
+        width: 16px;
+        height: 16px;
+     }
+      .register-link {
+        font-size: 0.85rem;
+    }
+}

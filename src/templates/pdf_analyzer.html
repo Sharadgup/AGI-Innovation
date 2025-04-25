@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}PDF Analyzer & Chat{% endblock %}
+
+{% block head_extra %}
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    {# Add specific CSS if needed #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='pdf_analyzer.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="analyzer-container">
+    <h1><i class="fas fa-file-pdf"></i> PDF Analyzer & Chat</h1>
+    <p>Upload a PDF document to extract its text and ask the AI questions about its content.</p>
+    <hr>
+
+    {# --- PDF Upload Section --- #}
+    <section class="upload-section card">
+        <div class="card-header">Step 1: Upload PDF</div>
+        <div class="card-body">
+            <form id="pdfUploadForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="pdfFile">Choose PDF File:</label>
+                    <input type="file" class="form-control" id="pdfFile" name="pdfFile" accept=".pdf" required>
+                </div>
+                <button type="submit" id="uploadBtn" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Upload & Process
+                </button>
+            </form>
+            <div id="uploadProgress" class="progress mt-3" style="display: none;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <div id="uploadStatus" class="mt-2"></div>
+            <div id="uploadError" class="error-message mt-2" style="display: none;"></div>
+        </div>
+    </section>
+
+    {# --- Text Preview & Chat Section (Initially Hidden) --- #}
+    <section id="analysisSection" class="analysis-section card mt-4" style="display: none;">
+        <div class="card-header">Step 2: Review Text & Chat</div>
+        <div class="card-body">
+            <h4>Extracted Text Preview:</h4>
+            <div id="textPreview" class="text-preview-area">
+                <p><i>Text will appear here after processing...</i></p>
+            </div>
+            <hr>
+            {# --- PDF Chat Area --- #}
+            <div id="pdfChatContainer" class="chat-container pdf-chat-container mt-3">
+                <h5>Chat about this PDF:</h5>
+                <div id="pdfChatMessages" class="chat-messages">
+                    {# Chat messages will appear here #}
+                </div>
+                <div id="pdfChatTypingIndicator" class="typing-indicator" style="display: none;">
+                    AI is thinking...<span class="dot-flashing"></span>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="pdfChatInput" placeholder="Ask a question about the PDF content..." disabled>
+                    <button id="sendPdfChatBtn" class="btn btn-secondary" disabled>Send</button>
+                </div>
+                <div id="pdfChatError" class="error-message" style="display: none; margin-top: 5px;"></div>
+            </div>
+             {# Hidden input to store the current analysis ID #}
+             <input type="hidden" id="currentAnalysisId" value="">
+        </div>
+    </section>
+
+     {# Link back to dashboard #}
+     <p class="mt-4 text-center agent-back-link"><a href="{{ url_for('core.dashboard') }}">« Back to Dashboard</a></p>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+     {# Load Font Awesome if using icons #}
+    {# <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script> #}
+    {# Load specific JS for this page #}
+    <script type="module" src="{{ url_for('static', filename='pdf_analyzer.js') }}"></script>
+{% endblock %}

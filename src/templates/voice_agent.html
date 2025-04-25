@@ -1,0 +1,55 @@
+{% extends "base.html" %} {# Or remove this line if not using inheritance #}
+
+{% block title %}Real-time Voice to Voice{% endblock %}
+
+{% block head_extra %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='voice_agent.css') }}">
+    {# Link Font Awesome if needed #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    {# ***** INCLUDE SOCKET.IO CLIENT LIBRARY HERE ***** #}
+    {# Place it preferably in the <head> or just before your script #}
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
+    {# ***** LIBRARY INCLUDED ***** #}
+
+{% endblock %}
+
+{% block content %}
+    {# ... Your HTML content (<div class="container"> etc.) ... #}
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="title-area">
+                <h1>Real-time <strong class="emphasized">Voice to Voice</strong> Conversation System</h1>
+            </div>
+            <div class="controls-area">
+                <a href="{{ url_for('core.dashboard') }}" id="dashboard-button" class="back-button">Back to Dashboard</a>
+                <a href="#" id="dashboard-button" class="back-button" >View history</a> 
+            </div>
+        </header>
+        <!-- Main Interface -->
+        <main class="main-interface">
+            <!-- Left Panel -->
+            <section class="left-panel">
+                 <div class="mic-control">
+                     <button id="mic-button" class="mic-button" title="Start/Stop Recording"><i class="fas fa-microphone" id="mic-icon"></i></button>
+                     <p class="mic-label">Microphone</p>
+                     <button id="exit-button" class="exit-button" title="Exit Interaction">X</button>
+                     <p id="status-message" class="status-message">Click mic to start</p>
+                 </div>
+                 <div class="chat-area user-chat-area" id="user-chat-area"><p class="placeholder-text">User speech here</p></div>
+            </section>
+            <!-- Right Panel -->
+            <section class="right-panel">
+                 <div class="chat-area agent-chat-area" id="agent-chat-area"><p class="placeholder-text">Agent response here</p></div>
+            </section>
+        </main>
+        <!-- Footer -->
+        <footer class="footer"><p>Footer info</p></footer>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {# Load YOUR script *AFTER* the Socket.IO library #}
+    <script src="{{ url_for('static', filename='voice_agent.js') }}"></script> {# Or voice_agent.js #}
+{% endblock %}

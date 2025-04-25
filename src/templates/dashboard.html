@@ -1,0 +1,103 @@
+{% extends "base.html" %} {# Assumes base.html exists #}
+
+{% block title %}Dashboard - {{ data.username }}{% endblock %}
+
+{% block head_extra %}
+    {# Load Socket.IO client library - needed only for dashboard chat  in #}
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    {# --- Left Sidebar --- #}
+    <aside class="sidebar">
+        <nav class="sidebar-nav">
+            {# AI Agents Section #}
+            <details class="sidebar-section" open>
+                <summary class="sidebar-section-title">🤖 AI Agents</summary>
+                <ul class="sidebar-submenu">
+                    {# *** Link to the new Education Agent route *** #}
+                    <li><a href="{{ url_for('agent.education_agent_page') }}">Education Agent</a></li>
+                    {# Other agent links would point to similar dedicated routes or handle content differently #}
+                    <li><a href="{{ url_for('agent.healthcare_agent_page') }}">Healthcare Agent</a></li>
+                    <li><a href="{{ url_for('agent.construction_agent_page') }}">Construction Agent</a></li>
+                    <li><a href="{{ url_for('voice.voice_agent_page') }}">Voice to Voice Agent</a></li>
+                    <li><a href="{{ url_for('news.news_agent_page') }}">News AI Agent</a></li>
+                    {# ... other agent links ... #}
+                </ul>
+            </details>
+
+            {# Services Section #}
+            <details class="sidebar-section">
+                <summary class="sidebar-section-title">⚙️ Services</summary>
+                <ul class="sidebar-submenu">
+                    {# ... other services ... #}
+                    <li><a href="{{ url_for('core.report_page') }}">Report Generator</a></li> {# Link to index.html #}
+                    <li><a href="{{ url_for('pdf.pdf_analyzer_page') }}">PDF Analyzer</a></li> {# *** NEW LINK *** #}
+                    <li><a href="{{ url_for('data.data_analyzer_page') }}">Go to Analyzer</a></li>
+                    <li><a href="{{ url_for('data.analysis_history') }}">View History</a></li>
+                </ul>
+            </details>
+
+             {# Integrated Apps Section #}
+            <details class="sidebar-section">
+                <summary class="sidebar-section-title">💡 Integrated Apps</summary>
+                 <ul class="sidebar-submenu">
+                    {% for app in data.apps %}
+                    <li><a href="#" data-content="app-{{ app.id }}">{{ app.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </details>
+
+            {# Account Section #}
+            <details class="sidebar-section">
+                <summary class="sidebar-section-title">👤 Account</summary>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" data-content="change-password">Change Password</a></li>
+                    <li><a href="#" data-content="view-profile">View Profile</a></li>
+                    <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+                </ul>
+            </details>
+        </nav>
+    </aside>
+
+    {# --- Main Dashboard Content Area --- #}
+    <section class="main-dashboard-content">
+        <h2>Dashboard Overview 📊</h2>
+        <p>Welcome back, <strong>{{ data.username }}</strong>! Select an option from the sidebar.</p>
+
+        {# Area for content panels loaded by sidebar clicks (excluding education agent) #}
+        <div id="dashboard-dynamic-content" class="dynamic-content-area">
+            <p><i>Content for the selected sidebar item will load here (if not a separate page).</i></p>
+
+             {# Placeholders for panels shown by data-content links #}
+             <div id="content-healthcare" class="content-panel" style="display: none;"><h3>Healthcare Agent</h3><p>Panel Content...</p></div>
+             <div id="content-construction" class="content-panel" style="display: none;"><h3>Construction Agent</h3><p>Panel Content...</p></div>
+             {# ... other panels ... #}
+             <div id="content-change-password" class="content-panel" style="display: none;"><h3>Change Password</h3><p>Form...</p></div>
+             <div id="content-view-profile" class="content-panel" style="display: none;"><h3>View Profile</h3><p>Details...</p></div>
+        </div>
+
+        {# --- Dashboard General Chat Section --- #}
+        {# (Keep the general chat section HTML as before) #}
+        <section class="dashboard-section dashboard-chat-section mt-4" id="chat-section">
+             <h3>General Chat 💬</h3>
+             <div id="dashboardChatMessages" class="chat-messages"></div>
+             <div id="dashboardTypingIndicator" class="typing-indicator" style="display: none;">AI is thinking...<span class="dot-flashing"></span></div>
+             <div class="chat-input-area">
+                 <input type="text" id="dashboardChatInput" placeholder="Ask a general question..." disabled>
+                 <button id="sendDashboardChatBtn" class="btn btn-secondary" disabled>Send</button>
+             </div>
+              <div id="chatError" class="error-message" style="display: none;"></div>
+        </section>
+
+    </section> {# End main-dashboard-content #}
+
+</div> {# End dashboard-layout #}
+{% endblock %}
+
+{% block scripts %}
+    {# Link the specific JavaScript for THIS dashboard page (sidebar toggles, general chat) #}
+    {# This script should NOT contain the Education Agent fetch logic anymore #}
+    <script type="module" src="{{ url_for('static', filename='script.js') }}"></script>
+{% endblock %}

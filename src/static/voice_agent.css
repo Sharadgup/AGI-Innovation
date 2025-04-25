@@ -1,0 +1,292 @@
+/* Basic Reset & Defaults */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: sans-serif; /* Simple, friendly font */
+    background-color: #f0f2f5; /* Light grey background (like white theme) */
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px; /* Add some padding around the container */
+}
+
+/* Main Application Container */
+.container {
+    background-color: #ffffff; /* White window background */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+    max-width: 1100px; /* Limit maximum width */
+    height: 85vh;      /* Set height relative to viewport */
+    min-height: 550px; /* Minimum sensible height */
+}
+
+/* Header Styling */
+.header {
+    background-color: #f8f9fa;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #dee2e6;
+    flex-shrink: 0;
+}
+
+.header h1 {
+    font-size: 1.4em;
+    color: #495057;
+    font-weight: normal;
+}
+
+.header .emphasized {
+    font-weight: bold;
+    color: #0056b3; /* Slightly darker blue for emphasis */
+}
+
+.controls-area .back-button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #6c757d;
+    color: rgba(232, 250, 181, 0.877);
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+}
+
+.controls-area .back-button:hover {
+    background-color: #5a6268;
+}
+
+/* Main Interface (Split View) */
+.main-interface {
+    display: flex;
+    flex-grow: 1; /* Takes available vertical space */
+    overflow: hidden;
+}
+
+.left-panel, .right-panel {
+    flex: 1; /* Equal width */
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.left-panel {
+    border-right: 1px solid #dee2e6; /* Divider line */
+}
+
+/* Microphone Control Area Styling */
+.mic-control {
+    text-align: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+    flex-shrink: 0;
+    position: relative; /* For positioning exit button */
+}
+
+.mic-button {
+    background-color: #0d6efd; /* Standard Bootstrap blue */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Circular */
+    width: 70px;
+    height: 70px;
+    font-size: 1.8em; /* Icon size */
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 8px auto; /* Center horizontally */
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.mic-button:hover {
+    background-color: #0b5ed7;
+}
+
+.mic-button.recording {
+    background-color: #dc3545; /* Red when recording */
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.7);
+}
+
+.mic-button.processing {
+    background-color: #ffc107; /* Yellow when processing */
+    cursor: not-allowed;
+}
+
+.mic-label {
+    font-weight: bold;
+    font-size: 0.95em;
+    margin-bottom: 10px; /* Space before exit button */
+}
+
+.exit-button {
+    position: absolute; /* Position relative to mic-control */
+    top: 5px;
+    right: 5px;
+    background-color: #f8d7da; /* Light red background */
+    color: #842029; /* Dark red text */
+    border: 1px solid #f5c2c7;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1; /* Ensure 'X' is centered */
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.exit-button:hover {
+    background-color: #dc3545; /* Darker red on hover */
+    color: white;
+}
+
+
+.status-message {
+    font-size: 0.85em;
+    color: #6c757d;
+    margin-top: 10px; /* Space below exit button */
+    min-height: 1.2em;
+}
+
+/* Chat Area Styling */
+.chat-area {
+    flex-grow: 1; /* Take remaining space */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 10px;
+    background-color: #f8f9fa; /* Light background for chat area */
+    border-radius: 5px;
+    border: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between messages */
+}
+
+.placeholder-text {
+    color: #aaa;
+    font-style: italic;
+    text-align: center;
+    margin: auto; /* Center placeholder vertically and horizontally */
+    font-size: 0.9em;
+}
+
+/* Chat Bubble Styling (Based on Sketch Notes) */
+.message-bubble {
+    padding: 10px 15px;
+    border-radius: 18px; /* Rounded bubbles */
+    max-width: 75%;
+    word-wrap: break-word;
+    font-size: 0.95em;
+    line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Subtle shadow */
+}
+
+.user-message {
+    /* Dark Blue Box */
+    background-color: #001f3f; /* Navy (Dark Blue) */
+    /* Light Blue / White-ish Text */
+    color: #e1f5fe; /* Light Cyan variant */
+    align-self: flex-end; /* Align user messages to the right */
+    margin-left: auto;
+    border-bottom-right-radius: 5px; /* Small tail */
+}
+
+.agent-message {
+    /* Dark Green Box */
+    background-color: #004d40; /* Dark Teal/Green */
+    /* Light Green / White-ish Text */
+    color: #e8f5e9; /* Light Green variant */
+    align-self: flex-start; /* Align agent messages to the left */
+    margin-right: auto;
+    border-bottom-left-radius: 5px; /* Small tail */
+}
+
+/* Style for the new button on the main page */
+.history-button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #17a2b8; /* Teal color */
+    color: white;
+    font-size: 0.9em;
+    text-decoration: none; /* Remove underline from link */
+    display: inline-flex; /* Align icon and text */
+    align-items: center;
+    gap: 5px; /* Space between icon and text */
+    transition: background-color 0.2s ease;
+}
+.history-button:hover {
+    background-color: #138496;
+    color: white; /* Keep text color on hover */
+}
+
+/* Footer Styling */
+.footer {
+    background-color: #f8f9fa;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 0.8em;
+    color: #6c757d;
+    border-top: 1px solid #dee2e6;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.footer-icon {
+    position: absolute;
+    right: 15px;
+    bottom: 8px;
+    height: 20px;
+    opacity: 0.7;
+}
+
+/* Responsive adjustments (Optional Example) */
+@media (max-width: 768px) {
+    .container {
+        height: 95vh; /* Take more height on smaller screens */
+        width: 100%;
+    }
+    .main-interface {
+        flex-direction: column;
+    }
+    .left-panel {
+        border-right: none;
+        border-bottom: 1px solid #dee2e6; /* Add border when stacked */
+        height: 50%; /* Adjust height distribution */
+    }
+     .right-panel {
+         height: 50%;
+     }
+    .header h1 {
+        font-size: 1.1em;
+    }
+    .mic-button {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5em;
+    }
+    .exit-button {
+        width: 24px;
+        height: 24px;
+        font-size: 0.9em;
+    }
+}

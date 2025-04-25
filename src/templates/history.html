@@ -1,0 +1,80 @@
+{% extends "base.html" %} {# Assumes you have a base template #}
+
+{% block title %}Voice Conversation History{% endblock %}
+
+{% block head_extra %}
+    {# Add specific CSS if needed #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+     {# Include Font Awesome if used in base or needed here #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Basic inline styles for quick setup */
+        .history-container { max-width: 900px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .history-list { list-style: none; padding: 0; }
+        .history-item { border-bottom: 1px solid #eee; padding: 15px 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; transition: background-color 0.2s ease; }
+        .history-item:hover { background-color: #f8f9fa; }
+        .history-item:last-child { border-bottom: none; }
+        .history-details { flex-grow: 1; margin-right: 15px; }
+        .history-timestamp { font-weight: bold; color: #333; font-size: 1.1em; margin-bottom: 5px; }
+        .history-preview { font-size: 0.95em; color: #555; font-style: italic; margin-bottom: 5px;}
+        .history-count { font-size: 0.85em; color: #777; }
+        .history-actions a { text-decoration: none; background-color: #007bff; color: white; padding: 6px 12px; border-radius: 4px; font-size: 0.9em; transition: background-color 0.2s ease; }
+        .history-actions a:hover { background-color: #0056b3; }
+        .no-history { text-align: center; color: #777; padding: 30px; }
+        .back-link { margin-top: 20px; display: inline-block; color: #007bff; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .error-message { color: #dc3545; font-weight: bold; text-align: center; margin-bottom: 15px; }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <h2><i class="fas fa-history"></i> Voice Conversation History</h2>
+    <hr>
+
+    <a href="{{ url_for('voice_agent_page') }}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Voice Agent</a>
+
+    {# Display errors if any occurred during fetch #}
+    {% if error %}
+        <p class="error-message">{{ error }}</p>
+    {% endif %}
+
+    {# Display history list #}
+    {% if conversations %}
+        <ul class="history-list">
+            {% for convo in conversations %}
+            <li class="history-item">
+                <div class="history-details">
+                    <div class="history-timestamp">
+                        {# Format the timestamp nicely - Requires datetime object passed from Flask #}
+                        {% if convo.display_timestamp %}
+                            {{ convo.display_timestamp.strftime('%Y-%m-%d %I:%M %p %Z') if convo.display_timestamp.tzinfo else convo.display_timestamp.strftime('%Y-%m-%d %I:%M %p') }}
+                        {% else %}
+                            Unknown Date
+                        {% endif %}
+                    </div>
+                    <div class="history-preview">"{{ convo.first_message_preview }}"</div>
+                    <div class="history-count">{{ convo.message_count }} message(s)</div>
+                </div>
+                <div class="history-actions">
+                     {# Link to view the full conversation details #}
+                    <a href="{{ url_for('view_conversation', conversation_id=convo._id) }}" title="View Details">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                     {# Placeholder for 'Continue' - more complex #}
+                     {# <a href="{{ url_for('voice_agent_page', load_convo_id=convo._id) }}" title="Continue (Not Implemented Yet)">Continue</a> #}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+         {# Message if no conversations are found #}
+        <p class="no-history">You don't have any saved voice conversations yet.</p>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {# Add any page-specific JS if needed later #}
+{% endblock %}

@@ -1,20 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon-32x32.png') }}" type="image/x-icon">
     <title>Vision AI Studio - Automated Solutions</title>
-    
+    <!-- 2. Sets the ICON in the browser tab (Favicon) -->
+   
+    {# Optional: PNG versions #}
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
+    {# Optional: Apple touch icon #}
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/apple-touch-icon.png') }}">
+    <!-- End Favicon Links -->
+
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}">
-    
+
     <!-- Add links to animation libraries (GSAP, Three.js, Lottie, etc.) here if needed -->
 </head>
+
 <body>
     <header class="landing-header">
         <nav class="navbar">
@@ -36,42 +47,89 @@
         <section id="home" class="hero-section">
             <!-- Video Background -->
             <div class="animated-video-background">
-                 <!-- Example using a local video file -->
-                 <video autoplay muted loop playsinline>
+                <!-- Example using a local video file -->
+                <video autoplay muted loop playsinline>
                     <source src="{{ url_for('static', filename='video/landing_background.mp4') }}" type="video/mp4">
                     Your browser does not support the video tag.
-                 </video>
+                </video>
             </div>
 
             <!-- Content Overlay -->
             <div class="hero-content">
-                <h1>Welcome to VisionAI</h1>
-                <p>Automating the future with intelligent vision.</p>
-               <!-- TO THIS -->
-               <a href="{{ url_for('auth.login') }}" class="cta-button">Get Started</a>
+                
+                <!-- TO THIS -->
+                <a href="{{ url_for('auth.login') }}" class="cta-button">Get Started</a>
             </div>
         </section>
+        <!-- Start About Section - Short Card Layout -->
+        <section id="about" class="content-section py-5 bg-light">
+            <div class="container">
+                <h2 class="text-center mb-5 display-5 fw-bold">About Vision AI Studio</h2>
 
-        <section id="about" class="content-section">
-            <h2>About Us</h2>
-            <p>We specialize in creating cutting-edge AI solutions that leverage computer vision for automation across various industries.</p>
-            <!-- Add more detailed content -->
+                <!-- Card 1: Core Concept -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h3 class="card-title h5 mb-2 text-primary"><i class="fas fa-lightbulb me-2"></i>Autonomous AI
+                            Agent Ecosystem</h3>
+                        <p>Vision AI Studio redefines collaboration using autonomous AI agents. Powered by the Gemini
+                            API, it integrates LLMs, real-time data, and multimodal inputs (voice, text, image) for
+                            end-to-end task automation.</p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Key Features -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h3 class="card-title h5 mb-2"><i class="fas fa-cogs me-2"></i>Core Capabilities</h3>
+                        <p>Experience truly autonomous operation with self-configuring workflows driven by agentic
+                            decision-making. Interact naturally via any modality, while the system continuously learns
+                            and optimizes through built-in feedback loops.</p>
+                        <!-- Optional concise list -->
+                        <!-- <p class="small text-muted mb-0 mt-2"><strong>Highlights:</strong> Agentic Autonomy | Self-Configuring | Multimodal | Self-Optimizing</p> -->
+                    </div>
+                </div>
+
+                <!-- Card 3: Value -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h3 class="card-title h5 mb-2 text-center"><i class="fas fa-bullseye me-2"></i>Key Benefits</h3>
+                        <div class="row text-center small">
+                            <div class="col-md-4 mb-2 mb-md-0">
+                                <i class="fas fa-rocket text-danger mb-1"></i><br />
+                                <strong>Rapid Automation:</strong> Concept to production faster, less code.
+                            </div>
+                            <div class="col-md-4 mb-2 mb-md-0">
+                                <i class="fas fa-cubes text-info mb-1"></i><br />
+                                <strong>Adaptable Agents:</strong> Works across business, healthcare, education & more.
+                            </div>
+                            <div class="col-md-4">
+                                <i class="fas fa-expand-arrows-alt text-success mb-1"></i><br />
+                                <strong>Scalable Design:</strong> Modular and cloud-ready for growth.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div> {# End .container #}
         </section>
-
+        <!-- End About Section -->
         <section id="content" class="content-section alt-bg">
             <h2>Content & Features</h2>
             <div class="feature-grid">
                 <div class="feature-item">
-                    <h3>Feature 1</h3>
-                    <p>Description of feature 1 with potential hover effect.</p>
+                    <h3>Autonomous Agent Operation</h3>
+                    <p>Autonomous Agent Operation: AI agents independently plan, decide, and execute complex tasks based
+                        on user goals, minimizing manual intervention.</p>
                 </div>
                 <div class="feature-item">
-                    <h3>Feature 2</h3>
-                    <p>Description of feature 2 with potential hover effect.</p>
+                    <h3>Multimodal Interaction</h3>
+                    <p>Multimodal Understanding & Response: Communicate via voice, text, or visuals, and receive
+                        contextually relevant responses in your preferred format.</p>
                 </div>
                 <div class="feature-item">
-                    <h3>Feature 3</h3>
-                    <p>Description of feature 3 with potential hover effect.</p>
+                    <h3>Self-Optimization</h3>
+                    <p>Self-Optimizing Architecture: Dynamic learning loops ensure the platform and its agents
+                        continuously adapt and improve their operational efficiency and effectiveness.</p>
                 </div>
             </div>
         </section>
@@ -81,16 +139,22 @@
             <p>Integrate our powerful vision capabilities into your own applications with our robust API.</p>
             <!-- Add API documentation links or details -->
             <pre><code>// Example API usage
-vision.detect("image.jpg").then(results => {
-    console.log(results);
-});</code></pre>
+ Comming Soon Master APi</code></pre>
         </section>
 
-        <section id="project" class="content-section alt-bg">
-            <h2>Project Details</h2>
-            <p>Explore the specifics of our flagship automation project.</p>
-            <!-- Add project specifics, case studies, etc. -->
-        </section>
+        <!-- Start Project Details Section -->
+<section id="project-details" class="content-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-4 display-6 fw-bold">Project Vision Ai Studio</h2>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title text-primary mb-3"><i class="fas fa-drafting-compass me-2"></i>Core Vision & Architecture</h4>
+                <p class="card-text mb-0">Vision AI Studio is architected as a full-stack, autonomous AI agent ecosystem designed for complex task automation and human-AI synergy. It leverages the Gemini API for core reasoning, orchestrating agents across multimodal interactions (voice, text, image) and self-configuring workflows to minimize manual intervention and accelerate outcomes.</p>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- End Project Details Section -->
     </main>
 
     <footer class="landing-footer">
@@ -101,7 +165,7 @@ vision.detect("image.jpg").then(results => {
                     <li><a href="#home">Home</a></li>
                     <li><a href="#about">About</a></li>
                     <li><a href="#api">API</a></li>
-                     <li><a href="#project">Project</a></li>
+                    <li><a href="#project">Project</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -112,7 +176,9 @@ vision.detect("image.jpg").then(results => {
             <div class="footer-section">
                 <h4>Follow Us</h4>
                 <!-- Add social media links/icons -->
-                <a href="https://www.linkedin.com/in/shardgupta2024/">LinkedIn</a> | <a href="https://x.com/sharadG75546208">X.com</a> | <a href="https://github.com/Sharadgup">Github Profile</a> | <a href="https://portfolio-website-zeta-tan-46.vercel.app/">Portfolio Website</a>
+                <a href="https://www.linkedin.com/in/shardgupta2024/">LinkedIn</a> | <a
+                    href="https://x.com/sharadG75546208">X.com</a> | <a href="https://github.com/Sharadgup">Github
+                    Profile</a> | <a href="https://portfolio-website-zeta-tan-46.vercel.app/">Portfolio Website</a>
             </div>
         </div>
         <div class="footer-bottom">
@@ -123,4 +189,5 @@ vision.detect("image.jpg").then(results => {
 
     <script src="{{ url_for('static', filename='landing.js') }}"></script>
 </body>
+
 </html>

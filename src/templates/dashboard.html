@@ -53,8 +53,8 @@
             <details class="sidebar-section">
                 <summary class="sidebar-section-title">👤 Account</summary>
                 <ul class="sidebar-submenu">
-                    <li><a href="#" data-content="change-password">Change Password</a></li>
-                    <li><a href="#" data-content="view-profile">View Profile</a></li>
+                    <li><a href="{{ url_for('auth.change_password_form') }}" >Change Password</a></li>
+                    <li><a href="{{url_for('auth.view_profile', username=data.username)}}" >View Profile</a></li>
                     <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
                 </ul>
             </details>

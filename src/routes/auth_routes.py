@@ -4,6 +4,7 @@ from datetime import datetime
 # --- Keep standard imports ---
 from flask import (Blueprint, render_template, request, redirect, url_for, flash, session, current_app, jsonify)
 from bson import ObjectId
+from bson.errors import InvalidId
 from pymongo.errors import DuplicateKeyError
 from flask_dance.contrib.google import google
 
@@ -13,6 +14,15 @@ from flask_dance.contrib.google import google
 
 # --- Import Utils ---
 from ..utils.auth_utils import is_logged_in, login_user, hash_password, verify_password
+from ..utils.file_utils import get_secure_filename # We might need a specific allowed list for images
+
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_profile_image(filename):
+    """Checks if the filename has an allowed image extension."""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
+
 
 bp = Blueprint('auth', __name__)
 
@@ -210,3 +220,251 @@ def logout():
     flash("You have been logged out successfully.", "success")
     logging.info(f"User '{username}' (ID: {user_id}) logged out.")
     return redirect(url_for('auth.login')) # Redirect to login page
+
+# --- Profile Routes ---
+
+@bp.route('/view_profile', methods=['GET'])
+def view_profile():
+    """Displays the user's profile page."""
+    from ..extensions import db # Need DB inside
+    if not is_logged_in(): flash("Please log in.", "warning"); return redirect(url_for('auth.login'))
+    if db is None: flash("Database unavailable.", "danger"); return redirect(url_for('core.dashboard'))
+    registrations_collection = db.registrations
+
+    try:
+        user_id = ObjectId(session['user_id']) # Raises InvalidId if session key is bad format
+        user_data = registrations_collection.find_one({"_id": user_id})
+
+        if not user_data:
+            flash("User profile not found. Logging out.", "danger")
+            session.clear(); return redirect(url_for('auth.login'))
+
+        # Prepare data safely for template
+        profile_data = {
+            "_id": str(user_data["_id"]),
+            "username": user_data.get("username"), "email": user_data.get("email"),
+            "name": user_data.get("name", ""), "age": user_data.get("age", ""),
+            "profile_picture_url": None, "login_method": user_data.get("login_method", "password")
+        }
+        # Generate static URL for profile picture if path exists
+        db_path = user_data.get("profile_picture_path")
+        if db_path:
+            try:
+                # Assumes 'uploads' is configured to be served under static, adjust if needed
+                # e.g., url_for('static', filename=f'profile_pics/{user_id}/{filename}')
+                # This needs careful alignment with how files are saved and served.
+                profile_data["profile_picture_url"] = url_for('static', filename=db_path)
+            except Exception as url_err:
+                 logging.error(f"Could not build profile picture URL for path '{db_path}': {url_err}")
+                 profile_data["profile_picture_url"] = None # Fallback if URL build fails
+
+        logging.debug(f"Rendering profile page for user: {profile_data.get('username')}")
+        return render_template('auth/profile.html', user=profile_data, now=datetime.utcnow())
+
+    except InvalidId: # Catch specific error for bad session ID format
+         flash("Invalid user session identifier. Please log in again.", "danger")
+         session.clear()
+         return redirect(url_for('auth.login'))
+    except Exception as e: # Catch other potential errors (DB connection etc.)
+        logging.error(f"Error fetching profile for user ID {session.get('user_id')}: {e}", exc_info=True)
+        flash("An error occurred while retrieving your profile.", "danger")
+        return redirect(url_for('core.dashboard'))
+
+
+@bp.route('/view_profile/update', methods=['POST'])
+def update_profile():
+    """Handles profile update form submission."""
+    from ..extensions import db # Need DB inside
+    if not is_logged_in(): flash("Please log in.", "warning"); return redirect(url_for('auth.login'))
+    if db is None: flash("Database unavailable.", "danger"); return redirect(url_for('auth.view_profile'))
+    registrations_collection = db.registrations
+    user_id_str = session['user_id']
+
+    try:
+        user_id = ObjectId(user_id_str) # Raises InvalidId if bad format
+        username_session = session.get('username', 'Unknown')
+
+        # Get form data
+        name = request.form.get('name', '').strip()
+        age_str = request.form.get('age', '').strip()
+        profile_image_file = request.files.get('profile_picture')
+
+        # Prepare update document
+        update_data = {"$set": {"last_modified": datetime.utcnow()}}
+        if name: update_data["$set"]["name"] = name
+        # else: update_data["$unset"] = {"name": ""} # Optionally remove if empty
+
+        if age_str: # Validate and add age
+            try: age = int(age_str); update_data["$set"]["age"] = age if 0 < age < 130 else user.get('age') # Keep old if invalid
+            except ValueError: flash("Age must be a number.", "warning"); return redirect(url_for('auth.view_profile'))
+        else: update_data["$set"]["age"] = None # Set to None if empty
+
+        # Handle Image Upload
+        if profile_image_file and profile_image_file.filename != '':
+            if allowed_profile_image(profile_image_file.filename):
+                try:
+                    profile_pics_base = os.path.join(current_app.config['UPLOAD_FOLDER'], 'profile_pics')
+                    user_pic_dir_rel = os.path.join('profile_pics', user_id_str) # Relative path part
+                    user_pic_dir_abs = os.path.join(profile_pics_base, user_id_str) # Full path to save
+                    os.makedirs(user_pic_dir_abs, exist_ok=True)
+
+                    original_filename = secure_filename(profile_image_file.filename)
+                    _, f_ext = os.path.splitext(original_filename)
+                    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+                    stored_filename = f"{timestamp}{f_ext}"
+                    save_path_abs = os.path.join(user_pic_dir_abs, stored_filename)
+
+                    # --- IMPORTANT: Serving Strategy ---
+                    # Strategy 1: Save outside 'static', serve via dedicated route (Recommended)
+                    # image_db_path = os.path.join('profile_pics', user_id_str, stored_filename).replace("\\", "/") # Store path relative to 'uploads' maybe?
+                    # Strategy 2: Save inside 'static' (Simpler, less ideal)
+                    # static_profile_dir = os.path.join(current_app.static_folder, 'img', 'profile_pics', user_id_str)
+                    # os.makedirs(static_profile_dir, exist_ok=True)
+                    # save_path_abs = os.path.join(static_profile_dir, stored_filename)
+                    # image_db_path = os.path.join('img', 'profile_pics', user_id_str, stored_filename).replace("\\", "/") # Path relative to 'static' for url_for
+
+                    # Assuming Strategy 1 for now - Need separate route to serve uploads/profile_pics/
+                    # For now, just store a path marker - url_for won't work directly like this
+                    # Store path relative to UPLOAD_FOLDER base for potential future serving route
+                    image_db_path = os.path.join('profile_pics', user_id_str, stored_filename).replace("\\", "/")
+                    # --- --------------------------- ---
+
+                    # Delete old file before saving new? Requires fetching old path first.
+                    # ... (fetch user doc, get old path, os.remove(old_path)) ...
+
+                    profile_image_file.save(save_path_abs) # Save to absolute path
+                    logging.info(f"Profile picture saved for user {user_id_str} at: {save_path_abs}")
+                    update_data["$set"]["profile_picture_path"] = image_db_path # Store relative path marker
+
+                except Exception as upload_err: logging.error(f"Profile pic save error: {upload_err}", exc_info=True); flash("Error uploading picture.", "danger")
+            else: flash("Invalid image file type.", "warning"); return redirect(url_for('auth.view_profile'))
+
+        # Update Database if changes were made
+        if len(update_data["$set"]) > 1:
+             logging.info(f"Updating profile for user '{username_session}'. Fields: {list(update_data['$set'].keys())}")
+             update_result = registrations_collection.update_one({"_id": user_id}, update_data)
+             if update_result.modified_count >= 0:
+                 flash("Profile updated!", "success")
+                 if name and 'username' in session: session['username'] = name # Update session username if changed
+             else: flash("Profile update failed.", "danger")
+        else: flash("No changes detected.", "info")
+
+        return redirect(url_for('auth.view_profile'))
+
+    except InvalidId: # Catch specific error first
+         flash("Invalid user session identifier.", "danger")
+         session.clear(); return redirect(url_for('auth.login'))
+    except Exception as e:
+        logging.error(f"Error updating profile for user ID {user_id_str}: {e}", exc_info=True)
+        flash("An unexpected error occurred.", "danger")
+        return redirect(url_for('auth.view_profile'))
+
+
+# --- NEW: Route to Display Change Password Form ---
+@bp.route('/change-password', methods=['GET'])
+# @login_required # Use decorator if available and preferred
+def change_password_form():
+    """Displays the form for the user to change their password."""
+    # Manual check if decorator not used
+    if not is_logged_in():
+        flash("Please log in to change your password.", "warning")
+        return redirect(url_for('auth.login'))
+    # Check login method from session
+    if session.get('login_method') != 'password':
+         flash("Password change is only available for accounts created with a password.", "warning")
+         return redirect(url_for('core.dashboard')) # Redirect if logged in via Google
+
+    logging.debug("Rendering change password form.")
+    # Render template from auth subdirectory
+    return render_template('auth/change_password.html', now=datetime.utcnow())
+
+
+# --- NEW: Route to Process Change Password Form ---
+@bp.route('/change-password', methods=['POST'])
+# @login_required # Use decorator if available and preferred
+def change_password_submit():
+    """Handles the submission of the change password form."""
+    # --- Access extensions INSIDE function ---
+    from ..extensions import db # Only need db here
+
+    # Manual checks if decorator not used
+    if not is_logged_in():
+        flash("Session expired. Please log in again.", "warning")
+        return redirect(url_for('auth.login'))
+    if session.get('login_method') != 'password':
+         # This check prevents direct POST access for non-password users
+         flash("Password change is not available for this account type.", "warning")
+         return redirect(url_for('core.dashboard'))
+
+    # Check DB connection
+    if db is None:
+        flash("Database service unavailable. Please try again later.", "danger")
+        return redirect(url_for('auth.change_password_form'))
+
+    registrations_collection = db.registrations # Access collection via db proxy
+
+    # Get form data
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+
+    # --- Validation ---
+    if not all([current_password, new_password, confirm_password]):
+        flash("All password fields are required.", "warning")
+        return redirect(url_for('auth.change_password_form'))
+    if new_password != confirm_password:
+        flash("New passwords do not match.", "warning")
+        return redirect(url_for('auth.change_password_form'))
+    if len(new_password) < 6:
+        flash("New password must be at least 6 characters long.", "warning")
+        return redirect(url_for('auth.change_password_form'))
+    if new_password == current_password:
+         flash("New password cannot be the same as the current password.", "warning")
+         return redirect(url_for('auth.change_password_form'))
+    # --- End Validation ---
+
+    try:
+        # Get user ID from secure session
+        user_id = ObjectId(session['user_id'])
+        username = session.get('username', 'Unknown') # For logging
+
+        # Fetch current user document
+        user = registrations_collection.find_one({"_id": user_id})
+        if not user:
+            flash("User session invalid. Please log in again.", "danger")
+            session.clear(); return redirect(url_for('auth.login'))
+
+        # Verify the CURRENT password using util function
+        if not verify_password(user.get('password_hash'), current_password):
+            flash("Incorrect current password.", "danger")
+            return redirect(url_for('auth.change_password_form'))
+
+        # --- Hash the NEW password ---
+        new_hashed_password = hash_password(new_password) # Use util function
+
+        # --- Update the user document in MongoDB ---
+        update_result = registrations_collection.update_one(
+            {"_id": user_id},
+            {"$set": {"password_hash": new_hashed_password, "last_modified": datetime.utcnow()}}
+        )
+
+        if update_result.modified_count == 1:
+            flash("Password updated successfully!", "success")
+            logging.info(f"Password updated for user '{username}' (ID: {user_id})")
+            return redirect(url_for('core.dashboard')) # Or profile page
+        else:
+            # Should ideally not happen if password verification passed and ID is correct
+            flash("Password could not be updated due to an internal issue. Please try again.", "danger")
+            logging.warning(f"Password update DB modify count was {update_result.modified_count} for user '{username}' (ID: {user_id}).")
+            return redirect(url_for('auth.change_password_form'))
+
+    except InvalidId:
+         flash("Invalid user session identifier.", "danger")
+         session.clear(); return redirect(url_for('auth.login'))
+    except Exception as e:
+        logging.error(f"Error changing password for user '{session.get('username', 'Unknown')}': {e}", exc_info=True)
+        flash("An unexpected error occurred. Please try again later.", "danger")
+        return redirect(url_for('auth.change_password_form'))
+
+
+# --- End auth_routes.py ---

@@ -80,8 +80,9 @@
         {% endif %}
     </div>
     <div class="text-center mb-4">
-        <h4 class="mb-1">{{ user.name or user.username }}</h4> {# Show name, fallback to username #}
-        <p class="text-muted mb-1">{{ user.email }}</p>
+        <h4>{{ user.name or user.username }}</h4>
+        {# Display Email - use .get() for safety in case it's missing #}
+        <p class="text-muted mb-1">{{ user.get('email', 'No email provided') }}</p>
         {% if user.age %} {# Only display age if it exists #}
             <p class="text-muted small mb-1">Age: {{ user.age }}</p>
         {% endif %}
@@ -116,12 +117,20 @@
             <div class="form-text">Username cannot be changed.</div>
         </div>
 
-        {# Display Email input #}
+        {# Email Input - Enable only for password users #}
         <div class="mb-3">
             <label for="email" class="form-label">Email Address</label>
-            <input type="email" class="form-control" id="email" name="email" value="{{ user.email | default('', true) }}" placeholder="Enter your full name">
-            <div class="form-text">This email might be displayed publicly.</div>
+            {# --- Conditionally Enable Input --- #}
+            {% if user.login_method == 'password' %}
+                <input type="email" class="form-control" id="email" name="email" value="{{ user.email | default('', true) }}" placeholder="Enter your email">
+                <div class="form-text">You can update your email address here.</div>
+            {% else %}
+                <input type="email" class="form-control" id="email" name="email_display" value="{{ user.email | default('', true) }}" disabled readonly>
+                <div class="form-text">Email associated with {{ user.login_method | capitalize }} login cannot be changed here.</div>
+            {% endif %}
+            {# --- End Conditional Input --- #}
         </div>
+
 
          {# Age Input #}
          <div class="mb-3">

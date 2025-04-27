@@ -385,12 +385,35 @@ def update_profile():
 
         name = request.form.get('name', '').strip()
         age_str = request.form.get('age', '').strip()
-        email_str = request.form.get('email','').strip()
         profile_image_file = request.files.get('profile_picture')
+        email_str = request.form.get('email','').strip().lower()
 
         update_data = {"$set": {"last_modified": datetime.utcnow()}}
         unset_data = {}
         # ... (process name, age) ...
+        # Update name if provided
+        if name: update_data["$set"]["name"] = name
+
+        # Validate and update age
+        # ... (age processing logic as before) ...
+        if age_str:
+             try: age = int(age_str); update_data["$set"]["age"] = age if 0<age<130 else None
+             except ValueError: flash("Age must be number."), redirect(url_for('.view_profile'))
+        else: unset_data["age"] = ""
+
+        # --- NEW: Update Email if Changed and Valid ---
+        current_email = user_doc_before_update.get('email')
+        email_changed = email and (email != current_email)
+
+        if email_changed:
+            # Basic email format check (can be improved with regex)
+            if '@' not in email or '.' not in email.split('@')[-1]:
+                 flash("Please enter a valid email address.", "warning")
+                 return redirect(url_for('auth.view_profile'))
+            # Add email to update set - verification status would be reset here if implemented
+            update_data["$set"]["email"] = email
+            # If implementing verification: update_data["$set"]["email_verified"] = False
+
 
         # --- Handle Image Upload ---
         if profile_image_file and profile_image_file.filename != '':
@@ -458,23 +481,38 @@ def update_profile():
 
         # --- Update Database (only if changes exist) ---
         # ... (The rest of the update logic as before) ...
-        final_update_op = {}; # ... construct final_update_op ...
-        if final_update_op:
-            # ... (log update, perform update_one, flash success/fail) ...
-            try:
-                update_result = registrations_collection.update_one({"_id": user_id}, final_update_op)
-                # ... check update_result.acknowledged, flash ...
-            except PyMongoError as db_err: # Catch DB error during final update
-                 logging.error(f"Update Profile DB Error (final update): {db_err}", exc_info=True)
-                 flash("Database error saving profile changes.", "danger")
-                 # Fall through to redirect below, error is flashed
-            except Exception as final_e: # Catch any other error during final update
-                logging.error(f"Unexpected error during final profile update: {final_e}", exc_info=True)
-                flash("Unexpected error saving profile changes.", "danger")
-        else:
-             flash("No changes submitted.", "info")
+         #--- Update Database ---
+        final_update_op = {}
+        if "$set" in update_data and len(update_data["$set"]) > 1 : final_update_op["$set"] = update_data["$set"]
+        if unset_data: final_update_op["$unset"] = unset_data
 
-        return redirect(url_for('auth.view_profile')) # Redirect back
+        if final_update_op:
+             logging.info(f"Updating profile for '{username_session}'. Op: {final_update_op}")
+             try:
+                 # --- Perform the update ---
+                 update_result = registrations_collection.update_one({"_id": user_id}, final_update_op)
+
+                 if update_result.acknowledged:
+                     flash("Profile updated!", "success")
+                     # Update session username if name changed
+                     if name and 'username' in session and session['username'] != name: session['username'] = name
+                 else: flash("Profile DB update failed.", "danger")
+
+             except DuplicateKeyError:
+                 # This specifically handles the case where the *new* email already exists
+                 logging.warning(f"Profile update failed for {username_session}: Email '{email}' already exists.")
+                 flash(f"Could not update profile: The email address '{email}' is already associated with another account.", "danger")
+                 # Redirect back without saving other changes if email was the duplicate
+                 return redirect(url_for('auth.view_profile'))
+             except PyMongoError as db_err: # Catch other DB errors during update
+                 logging.error(f"Update Profile DB Error for {username_session}: {db_err}", exc_info=True)
+                 flash("Database error saving profile changes.", "danger")
+                 return redirect(url_for('auth.view_profile')) # Redirect back
+
+        else:
+            flash("No changes submitted.", "info") # Inform user if nothing changed
+
+        return redirect(url_for('auth.view_profile')) # Redirect back after processing
 
     # --- Outer Exception Handling ---
     except InvalidId:

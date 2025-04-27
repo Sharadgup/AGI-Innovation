@@ -116,11 +116,11 @@
             <div class="form-text">Username cannot be changed.</div>
         </div>
 
-        {# Email (Read-only) #}
+        {# Display Email input #}
         <div class="mb-3">
             <label for="email" class="form-label">Email Address</label>
-            <input type="email" class="form-control" id="email" name="email_display" value="{{ user.email | default('', true) }}" disabled readonly>
-            <div class="form-text">Email cannot be changed.</div>
+            <input type="email" class="form-control" id="email" name="email" value="{{ user.email | default('', true) }}" placeholder="Enter your full name">
+            <div class="form-text">This email might be displayed publicly.</div>
         </div>
 
          {# Age Input #}

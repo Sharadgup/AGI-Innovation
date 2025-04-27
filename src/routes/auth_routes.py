@@ -350,7 +350,7 @@ def view_profile():
         if not user_data: flash("User not found.", "danger"); session.clear(); return redirect(url_for('auth.login'))
 
         # Prepare profile data safely
-        profile_data = { "_id": str(user_data["_id"]), "username": user_data.get("username"), "email": user_data.get("email"), "name": user_data.get("name", ""), "age": user_data.get("age", ""), "profile_picture_url": None, "login_method": user_data.get("login_method", "password") }
+        profile_data = { "_id": str(user_data["_id"]), "username": user_data.get("username"), "email": user_data.get(["email",""]), "name": user_data.get("name", ""), "age": user_data.get("age", ""), "profile_picture_url": None, "login_method": user_data.get("login_method", "password") }
         db_path = user_data.get("profile_picture_path")
         if db_path:
             try:
@@ -385,6 +385,7 @@ def update_profile():
 
         name = request.form.get('name', '').strip()
         age_str = request.form.get('age', '').strip()
+        email_str = request.form.get('email','').strip()
         profile_image_file = request.files.get('profile_picture')
 
         update_data = {"$set": {"last_modified": datetime.utcnow()}}

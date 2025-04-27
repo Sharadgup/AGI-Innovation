@@ -8,6 +8,8 @@ from bson.errors import InvalidId
 from pymongo.errors import DuplicateKeyError, PyMongoError
 from flask_dance.contrib.google import google
 from werkzeug.utils import secure_filename
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature # For tokens
+from datetime import timedelta # For token expiry
 
 # --- Import only the main db/extensions object if needed for setup, OR import nothing from extensions here ---
 from ..extensions import db, google_bp, google_enabled # OK to import placeholders needed globally
@@ -334,7 +336,215 @@ def change_password_submit():
         flash("An unexpected error occurred. Please try again later.", "danger")
         return redirect(url_for('auth.change_password_form'))
 
-# --- Profile Routes ---
+# --- Forgot Password Routes ---
+
+def get_reset_token_serializer(secret_key=None, salt='password-reset-salt'):
+    """Creates a configured serializer for generating/verifying tokens."""
+    if secret_key is None:
+        secret_key = current_app.config['SECRET_KEY'] # Use app's main secret key
+    return URLSafeTimedSerializer(secret_key, salt=salt)
+
+# --- Route to Display Forgot Password Form ---
+@bp.route('/forgot-password', methods=['GET'])
+def forgot_password_request_form():
+    """Displays the form asking for the user's email to send a reset link."""
+    if is_logged_in(): return redirect(url_for('core.dashboard')) # Redirect if already logged in
+    return render_template('auth/forgot_password_request.html', now=datetime.utcnow())
+
+# --- Route to Handle Forgot Password Email Submission ---
+@bp.route('/forgot-password', methods=['POST'])
+def forgot_password_request_submit():
+    """Processes the email submission, generates token, and sends reset email."""
+    # --- Access extensions INSIDE function ---
+    from ..extensions import db, mail # Need db and mail
+    from flask_mail import Message # Need Message class
+
+    if is_logged_in(): return redirect(url_for('core.dashboard'))
+    if db is None: flash("Database unavailable.", "danger"); return redirect(url_for('auth.forgot_password_request_form'))
+    if mail is None or not current_app.config.get('MAIL_USERNAME'):
+         flash("Email service is not configured on the server.", "danger")
+         logging.error("Forgot Password attempt failed: Flask-Mail not configured/initialized.")
+         return redirect(url_for('auth.forgot_password_request_form'))
+
+    registrations_collection = db.registrations
+    email = request.form.get('email', '').strip().lower()
+
+    if not email:
+        flash("Please enter your email address.", "warning")
+        return redirect(url_for('auth.forgot_password_request_form'))
+
+    try:
+        user = registrations_collection.find_one({"email": email})
+
+        # IMPORTANT: Only allow reset for password-based accounts if desired
+        if user and user.get('login_method', 'password') == 'password':
+            # --- Generate Token ---
+            s = get_reset_token_serializer()
+            # Include user ID in the token data, set expiry (e.g., 1 hour)
+            expires_in_seconds = 3600
+            token = s.dumps({'user_id': str(user['_id'])}) # expiry handled by serializer max_age
+
+            # --- Create Reset Link ---
+            # Use _external=True to get the full URL including domain
+            reset_url = url_for('auth.reset_password_form', token=token, _external=True)
+
+            # --- Send Email (Placeholder - Requires Flask-Mail Setup) ---
+            subject = "Password Reset Request - Vision AI Studio"
+            # Create HTML body (consider using render_template for a nice email template)
+            html_body = f"""
+            <p>Hello {user.get('name') or user.get('username', 'User')},</p>
+            <p>You requested a password reset for your Vision AI Studio account associated with this email address.</p>
+            <p>Click the link below to set a new password. This link is valid for 1 hour:</p>
+            <p><a href="{reset_url}">{reset_url}</a></p>
+            <p>If you did not request this reset, please ignore this email.</p>
+            <p>Thanks,<br>The Vision AI Studio Team</p>
+            """
+            msg = Message(subject=subject,
+                          recipients=[email], # Send to user's email
+                          html=html_body,
+                          sender=current_app.config.get('MAIL_DEFAULT_SENDER')) # Use configured sender
+
+            try:
+                logging.info(f"Attempting to send password reset email to {email} for user {user.get('username')}")
+                # mail.send(msg) # <<< UNCOMMENT THIS LINE WHEN MAIL IS CONFIGURED
+                logging.info("Password reset email send command issued (actual sending depends on Flask-Mail config).")
+                # --- --- --- --- ---
+
+                # !! TEMPORARY: For testing without email, log the link !!
+                print("-" * 20)
+                print(f"PASSWORD RESET LINK (for testing - normally emailed): {reset_url}")
+                print("-" * 20)
+                # !! END TEMPORARY !!
+
+                flash("If an account exists for that email, a password reset link has been sent. Please check your inbox (and spam folder).", "info")
+                return redirect(url_for('auth.login'))
+
+            except Exception as mail_err:
+                 logging.error(f"Failed to send password reset email to {email}: {mail_err}", exc_info=True)
+                 flash("Could not send reset email due to a server error. Please contact support.", "danger")
+                 return redirect(url_for('auth.forgot_password_request_form'))
+
+        elif user and user.get('login_method') != 'password':
+             # User exists but uses OAuth - don't send reset link
+             flash(f"This account uses {user.get('login_method', 'an external provider')} for login. Please manage your password through that service.", "warning")
+             return redirect(url_for('auth.login'))
+        else:
+            # Email not found - show generic success message for security (don't reveal if email exists)
+            logging.info(f"Password reset requested for non-existent or non-password email: {email}")
+            flash("If an account exists for that email, a password reset link has been sent.", "info")
+            return redirect(url_for('auth.login'))
+
+    except PyMongoError as db_err:
+        logging.error(f"Forgot Password DB Error for {email}: {db_err}", exc_info=True)
+        flash("A database error occurred. Please try again.", "danger")
+        return redirect(url_for('auth.forgot_password_request_form'))
+    except Exception as e:
+        logging.error(f"Unexpected error during password reset request for {email}: {e}", exc_info=True)
+        flash("An unexpected error occurred. Please try again.", "danger")
+        return redirect(url_for('auth.forgot_password_form')) # Redirect back to forgot form
+
+# --- Route to Display Reset Password Form (from email link) ---
+@bp.route('/reset-password/<token>', methods=['GET'])
+def reset_password_form(token):
+    """Verifies the token and displays the form to enter a new password."""
+    if is_logged_in(): return redirect(url_for('core.dashboard')) # Don't allow logged-in users here
+
+    s = get_reset_token_serializer()
+    try:
+        # Verify token signature and expiry (default max_age is 3600s/1hr for loads)
+        data = s.loads(token, max_age=3600)
+        user_id_str = data.get('user_id')
+        if not user_id_str: raise Exception("Token missing user ID")
+        # Optional: Could check here if user still exists, but POST handles final check
+        logging.info(f"Password reset token validated for user ID: {user_id_str}")
+        # Render the form, passing the valid token
+        return render_template('auth/reset_password_form.html', token=token, now=datetime.utcnow())
+
+    except SignatureExpired:
+        flash("The password reset link has expired. Please request a new one.", "danger")
+        return redirect(url_for('auth.forgot_password_request_form'))
+    except BadTimeSignature:
+        flash("The password reset link is invalid or has been tampered with.", "danger")
+        return redirect(url_for('auth.forgot_password_request_form'))
+    except Exception as e:
+        logging.error(f"Error validating reset token '{token[:10]}...': {e}")
+        flash("Invalid password reset link.", "danger")
+        return redirect(url_for('auth.forgot_password_request_form'))
+
+# --- Route to Handle Reset Password Submission ---
+@bp.route('/reset-password/<token>', methods=['POST'])
+def reset_password_submit(token):
+    """Processes the new password submission after validating the token."""
+    # --- Access extensions INSIDE function ---
+    from ..extensions import db
+
+    if is_logged_in(): return redirect(url_for('core.dashboard'))
+    if db is None: flash("Database unavailable.", "danger"); return redirect(url_for('auth.login')) # Redirect to login on DB error here
+    registrations_collection = db.registrations
+
+    # Re-verify the token
+    s = get_reset_token_serializer()
+    user_id_str = None
+    try:
+        data = s.loads(token, max_age=3600) # Check expiry again
+        user_id_str = data.get('user_id')
+        if not user_id_str: raise Exception("Invalid token data")
+        user_id = ObjectId(user_id_str) # Convert to ObjectId for DB query
+    except (SignatureExpired, BadTimeSignature, InvalidId, Exception) as e:
+        logging.warning(f"Invalid or expired token used on POST: {token[:10]}... Error: {e}")
+        flash("Invalid or expired password reset link. Please request a new one.", "danger")
+        return redirect(url_for('auth.forgot_password_request_form'))
+
+    # Get new passwords from form
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+
+    # Validation
+    if not new_password or not confirm_password:
+        flash("Both password fields are required.", "warning")
+        return render_template('auth/reset_password_form.html', token=token, now=datetime.utcnow()) # Re-render form with token
+    if new_password != confirm_password:
+        flash("Passwords do not match.", "warning")
+        return render_template('auth/reset_password_form.html', token=token, now=datetime.utcnow())
+    if len(new_password) < 6:
+        flash("Password must be at least 6 characters long.", "warning")
+        return render_template('auth/reset_password_form.html', token=token, now=datetime.utcnow())
+
+    try:
+        # Find the user again to ensure they still exist and haven't changed login method
+        user = registrations_collection.find_one({"_id": user_id, "login_method": "password"})
+        if not user:
+            flash("Password reset failed: User account not found or cannot be reset.", "danger")
+            return redirect(url_for('auth.forgot_password_request_form'))
+
+        # Hash the new password
+        new_hashed_password = hash_password(new_password)
+
+        # Update the password in the database
+        update_result = registrations_collection.update_one(
+            {"_id": user_id},
+            # Also update last_modified timestamp
+            {"$set": {"password_hash": new_hashed_password, "last_modified": datetime.utcnow()}}
+            # Consider invalidating other sessions here if needed
+        )
+
+        if update_result.acknowledged:
+            flash("Your password has been successfully reset! Please log in with your new password.", "success")
+            logging.info(f"Password successfully reset for user ID {user_id_str}")
+            return redirect(url_for('auth.login')) # Redirect to login page
+        else:
+            flash("Password reset failed due to a database issue.", "danger")
+            return render_template('auth/reset_password_form.html', token=token, now=datetime.utcnow())
+
+    except PyMongoError as db_err:
+         logging.error(f"Reset Password DB Error for {user_id_str}: {db_err}", exc_info=True)
+         flash("Database error resetting password.", "danger")
+         return render_template('auth/reset_password_form.html', token=token, now=datetime.utcnow())
+    except Exception as e:
+        logging.error(f"Unexpected error resetting password for {user_id_str}: {e}", exc_info=True)
+        flash("An unexpected error occurred.", "danger")
+        return render_template('auth/reset_password_form.html', token=token, now=datetime.utcnow())
+
 # --- Profile Routes ---
 @bp.route('/profile', methods=['GET'])
 def view_profile():

@@ -1,0 +1,196 @@
+{% extends "base.html" %} {# Inherit from your base layout #}
+
+{% block title %}User Profile - {{ user.username or 'User' }}{% endblock %}
+
+{% block head_extra %}
+    {# Link to specific CSS for auth forms if you have one #}
+    {# Page-specific styles #}
+    <style>
+        .profile-container {
+            max-width: 700px; /* Adjust width as needed */
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Slightly stronger shadow */
+        }
+        .profile-picture-container {
+            margin-bottom: 25px;
+        }
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%; /* Make it circular */
+            object-fit: cover; /* Crop image nicely */
+            border: 4px solid #dee2e6; /* Subtle border */
+            background-color: #f8f9fa; /* Fallback background */
+        }
+        .profile-picture-placeholder {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: #e9ecef; /* Light grey placeholder */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid #dee2e6;
+            color: #adb5bd; /* Lighter icon color */
+        }
+        .profile-picture-placeholder i {
+            font-size: 4rem; /* Larger placeholder icon */
+        }
+        #profilePicturePreview { /* Style for the JS preview */
+            max-width: 150px;
+            max-height: 150px;
+            margin-top: 15px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ced4da;
+        }
+        .form-label {
+            font-weight: 500; /* Slightly bolder labels */
+        }
+        .form-text {
+            font-size: 0.85em; /* Smaller help text */
+        }
+        /* Ensure flash messages container has some margin */
+        .flash-messages-container {
+             margin-bottom: 1.5rem;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+<div class="profile-container">
+    <h2 class="text-center mb-4">Your Profile</h2>
+
+    {# Include the reusable flash messages partial #}
+    {% include '_flash_messages.html' %}
+
+    {# --- Display Current Profile Info --- #}
+    <div class="text-center profile-picture-container">
+        {# Display uploaded picture or placeholder #}
+        {% if user.profile_picture_url %}
+            <img src="{{ user.profile_picture_url }}" alt="{{ user.name or user.username }}'s Profile Picture" class="profile-picture img-thumbnail">
+        {% else %}
+            <div class="profile-picture-placeholder">
+                <i class="fas fa-user"></i>
+            </div>
+        {% endif %}
+    </div>
+    <div class="text-center mb-4">
+        <h4 class="mb-1">{{ user.name or user.username }}</h4> {# Show name, fallback to username #}
+        <p class="text-muted mb-1">{{ user.email }}</p>
+        {% if user.age %} {# Only display age if it exists #}
+            <p class="text-muted small mb-1">Age: {{ user.age }}</p>
+        {% endif %}
+        <p class="text-muted small mb-3">Login Method: {{ user.login_method | capitalize }}</p>
+
+        {# Only show Change Password button for password accounts #}
+        {% if user.login_method == 'password' %}
+            <a href="{{ url_for('auth.change_password_form') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-key me-1"></i> Change Password
+            </a>
+        {% endif %}
+    </div>
+
+    <hr class="my-4">
+
+    {# --- Edit Profile Form --- #}
+    <h4 class="mb-3">Update Profile Information</h4>
+    {# Form needs multipart/form-data for file uploads #}
+    <form method="POST" action="{{ url_for('auth.update_profile') }}" enctype="multipart/form-data" id="updateProfileForm">
+
+        {# Display Name Input #}
+        <div class="mb-3">
+            <label for="name" class="form-label">Display Name</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ user.name | default('', true) }}" placeholder="Enter your full name">
+             <div class="form-text">This name might be displayed publicly.</div>
+        </div>
+
+        {# Username (Read-only) #}
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username_display" value="{{ user.username | default('', true) }}" disabled readonly>
+            <div class="form-text">Username cannot be changed.</div>
+        </div>
+
+        {# Email (Read-only) #}
+        <div class="mb-3">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="email" name="email_display" value="{{ user.email | default('', true) }}" disabled readonly>
+            <div class="form-text">Email cannot be changed.</div>
+        </div>
+
+         {# Age Input #}
+         <div class="mb-3">
+            <label for="age" class="form-label">Age (Optional)</label>
+            <input type="number" class="form-control" id="age" name="age" value="{{ user.age | default('', true) }}" min="1" max="129" placeholder="Enter your age">
+        </div>
+
+         {# Profile Picture Upload #}
+         <div class="mb-4">
+            <label for="profile_picture" class="form-label">Update Profile Picture</label>
+            <input class="form-control" type="file" id="profile_picture" name="profile_picture" accept="image/png, image/jpeg, image/gif, image/webp">
+             <div class="form-text">Allowed formats: JPG, PNG, GIF, WEBP. Max size: ~2MB (check server limits).</div>
+             {# Image preview area - initially hidden #}
+             <div class="text-center"> {# Center the preview #}
+                <img id="profilePicturePreview" src="#" alt="New profile picture preview" style="display: none;"/>
+             </div>
+        </div>
+
+        {# Submit Button #}
+        <div class="d-grid"> {# Makes button full width #}
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save Changes</button>
+        </div>
+    </form> {# End Form #}
+
+</div> {# End profile-container #}
+{% endblock %} {# End block content #}
+
+{% block scripts %}
+<script>
+    // JavaScript for Image Preview
+    document.addEventListener('DOMContentLoaded', () => {
+        const profilePicInput = document.getElementById('profile_picture');
+        const profilePicPreview = document.getElementById('profilePicturePreview');
+
+        if (profilePicInput && profilePicPreview) {
+            profilePicInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                // Basic client-side validation
+                if (file && file.type.startsWith('image/')) {
+                    // Check size locally (optional, backend validation is primary)
+                    const maxSizeMB = 2; // Example: 2MB limit for preview JS
+                    if (file.size > maxSizeMB * 1024 * 1024) {
+                         alert(`Image too large (Max ${maxSizeMB}MB). Please choose a smaller file.`);
+                         profilePicInput.value = ''; // Reset input
+                         profilePicPreview.src = '#';
+                         profilePicPreview.style.display = 'none';
+                         return;
+                    }
+
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        profilePicPreview.src = e.target.result;
+                        profilePicPreview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    // Clear preview if no file, wrong type, or cleared
+                    profilePicPreview.src = '#';
+                    profilePicPreview.style.display = 'none';
+                    if (file) { // Only alert if a non-image file was selected
+                         alert("Please select a valid image file (png, jpg, gif, webp).");
+                         profilePicInput.value = ''; // Reset input
+                    }
+                }
+            });
+        } else {
+            console.warn("Profile picture input or preview element not found.");
+        }
+    });
+</script>
+{% endblock %} {# End block scripts #}

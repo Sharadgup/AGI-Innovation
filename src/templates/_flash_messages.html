@@ -1,0 +1,16 @@
+{# src/templates/_flash_messages.html - Reusable partial for displaying flashed messages #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {# Add some top/bottom margin to separate from content above/below #}
+    <div class="flash-messages-container my-3"> {# Use my-3 for margin top/bottom #}
+      {% for category, message in messages %}
+        {# Map flash categories to Bootstrap alert types #}
+        {% set alert_type = category if category in ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'] else 'info' %}
+        <div class="alert alert-{{ alert_type }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}

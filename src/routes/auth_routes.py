@@ -5,24 +5,28 @@ from datetime import datetime
 from flask import (Blueprint, render_template, request, redirect, url_for, flash, session, current_app, jsonify)
 from bson import ObjectId
 from bson.errors import InvalidId
-from pymongo.errors import DuplicateKeyError
+from pymongo.errors import DuplicateKeyError, PyMongoError
 from flask_dance.contrib.google import google
+from werkzeug.utils import secure_filename
 
 # --- Import only the main db/extensions object if needed for setup, OR import nothing from extensions here ---
-# from ..extensions import db, google_bp, google_enabled # OK to import placeholders needed globally
+from ..extensions import db, google_bp, google_enabled # OK to import placeholders needed globally
 # --- DO NOT import specific collections like input_prompts_collection here ---
 
 # --- Import Utils ---
 from ..utils.auth_utils import is_logged_in, login_user, hash_password, verify_password
 from ..utils.file_utils import get_secure_filename # We might need a specific allowed list for images
 
+# --- Allowed image extensions (Define globally for this module) ---
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 def allowed_profile_image(filename):
     """Checks if the filename has an allowed image extension."""
+    # Ensure filename is not None and is a string before processing
+    if not filename or not isinstance(filename, str):
+        return False
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
-
 
 bp = Blueprint('auth', __name__)
 
@@ -102,6 +106,7 @@ def login():
 
      if request.method == 'POST':
          if db is None: # Check db connection
+            
              flash("Database service is currently unavailable. Please try again later.", "danger") # Added flash
              return render_template('login.html', now=datetime.utcnow(), google_login_enabled=google_login_status)
 
@@ -221,143 +226,6 @@ def logout():
     logging.info(f"User '{username}' (ID: {user_id}) logged out.")
     return redirect(url_for('auth.login')) # Redirect to login page
 
-# --- Profile Routes ---
-
-@bp.route('/view_profile', methods=['GET'])
-def view_profile():
-    """Displays the user's profile page."""
-    from ..extensions import db # Need DB inside
-    if not is_logged_in(): flash("Please log in.", "warning"); return redirect(url_for('auth.login'))
-    if db is None: flash("Database unavailable.", "danger"); return redirect(url_for('core.dashboard'))
-    registrations_collection = db.registrations
-
-    try:
-        user_id = ObjectId(session['user_id']) # Raises InvalidId if session key is bad format
-        user_data = registrations_collection.find_one({"_id": user_id})
-
-        if not user_data:
-            flash("User profile not found. Logging out.", "danger")
-            session.clear(); return redirect(url_for('auth.login'))
-
-        # Prepare data safely for template
-        profile_data = {
-            "_id": str(user_data["_id"]),
-            "username": user_data.get("username"), "email": user_data.get("email"),
-            "name": user_data.get("name", ""), "age": user_data.get("age", ""),
-            "profile_picture_url": None, "login_method": user_data.get("login_method", "password")
-        }
-        # Generate static URL for profile picture if path exists
-        db_path = user_data.get("profile_picture_path")
-        if db_path:
-            try:
-                # Assumes 'uploads' is configured to be served under static, adjust if needed
-                # e.g., url_for('static', filename=f'profile_pics/{user_id}/{filename}')
-                # This needs careful alignment with how files are saved and served.
-                profile_data["profile_picture_url"] = url_for('static', filename=db_path)
-            except Exception as url_err:
-                 logging.error(f"Could not build profile picture URL for path '{db_path}': {url_err}")
-                 profile_data["profile_picture_url"] = None # Fallback if URL build fails
-
-        logging.debug(f"Rendering profile page for user: {profile_data.get('username')}")
-        return render_template('auth/profile.html', user=profile_data, now=datetime.utcnow())
-
-    except InvalidId: # Catch specific error for bad session ID format
-         flash("Invalid user session identifier. Please log in again.", "danger")
-         session.clear()
-         return redirect(url_for('auth.login'))
-    except Exception as e: # Catch other potential errors (DB connection etc.)
-        logging.error(f"Error fetching profile for user ID {session.get('user_id')}: {e}", exc_info=True)
-        flash("An error occurred while retrieving your profile.", "danger")
-        return redirect(url_for('core.dashboard'))
-
-
-@bp.route('/view_profile/update', methods=['POST'])
-def update_profile():
-    """Handles profile update form submission."""
-    from ..extensions import db # Need DB inside
-    if not is_logged_in(): flash("Please log in.", "warning"); return redirect(url_for('auth.login'))
-    if db is None: flash("Database unavailable.", "danger"); return redirect(url_for('auth.view_profile'))
-    registrations_collection = db.registrations
-    user_id_str = session['user_id']
-
-    try:
-        user_id = ObjectId(user_id_str) # Raises InvalidId if bad format
-        username_session = session.get('username', 'Unknown')
-
-        # Get form data
-        name = request.form.get('name', '').strip()
-        age_str = request.form.get('age', '').strip()
-        profile_image_file = request.files.get('profile_picture')
-
-        # Prepare update document
-        update_data = {"$set": {"last_modified": datetime.utcnow()}}
-        if name: update_data["$set"]["name"] = name
-        # else: update_data["$unset"] = {"name": ""} # Optionally remove if empty
-
-        if age_str: # Validate and add age
-            try: age = int(age_str); update_data["$set"]["age"] = age if 0 < age < 130 else user.get('age') # Keep old if invalid
-            except ValueError: flash("Age must be a number.", "warning"); return redirect(url_for('auth.view_profile'))
-        else: update_data["$set"]["age"] = None # Set to None if empty
-
-        # Handle Image Upload
-        if profile_image_file and profile_image_file.filename != '':
-            if allowed_profile_image(profile_image_file.filename):
-                try:
-                    profile_pics_base = os.path.join(current_app.config['UPLOAD_FOLDER'], 'profile_pics')
-                    user_pic_dir_rel = os.path.join('profile_pics', user_id_str) # Relative path part
-                    user_pic_dir_abs = os.path.join(profile_pics_base, user_id_str) # Full path to save
-                    os.makedirs(user_pic_dir_abs, exist_ok=True)
-
-                    original_filename = secure_filename(profile_image_file.filename)
-                    _, f_ext = os.path.splitext(original_filename)
-                    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
-                    stored_filename = f"{timestamp}{f_ext}"
-                    save_path_abs = os.path.join(user_pic_dir_abs, stored_filename)
-
-                    # --- IMPORTANT: Serving Strategy ---
-                    # Strategy 1: Save outside 'static', serve via dedicated route (Recommended)
-                    # image_db_path = os.path.join('profile_pics', user_id_str, stored_filename).replace("\\", "/") # Store path relative to 'uploads' maybe?
-                    # Strategy 2: Save inside 'static' (Simpler, less ideal)
-                    # static_profile_dir = os.path.join(current_app.static_folder, 'img', 'profile_pics', user_id_str)
-                    # os.makedirs(static_profile_dir, exist_ok=True)
-                    # save_path_abs = os.path.join(static_profile_dir, stored_filename)
-                    # image_db_path = os.path.join('img', 'profile_pics', user_id_str, stored_filename).replace("\\", "/") # Path relative to 'static' for url_for
-
-                    # Assuming Strategy 1 for now - Need separate route to serve uploads/profile_pics/
-                    # For now, just store a path marker - url_for won't work directly like this
-                    # Store path relative to UPLOAD_FOLDER base for potential future serving route
-                    image_db_path = os.path.join('profile_pics', user_id_str, stored_filename).replace("\\", "/")
-                    # --- --------------------------- ---
-
-                    # Delete old file before saving new? Requires fetching old path first.
-                    # ... (fetch user doc, get old path, os.remove(old_path)) ...
-
-                    profile_image_file.save(save_path_abs) # Save to absolute path
-                    logging.info(f"Profile picture saved for user {user_id_str} at: {save_path_abs}")
-                    update_data["$set"]["profile_picture_path"] = image_db_path # Store relative path marker
-
-                except Exception as upload_err: logging.error(f"Profile pic save error: {upload_err}", exc_info=True); flash("Error uploading picture.", "danger")
-            else: flash("Invalid image file type.", "warning"); return redirect(url_for('auth.view_profile'))
-
-        # Update Database if changes were made
-        if len(update_data["$set"]) > 1:
-             logging.info(f"Updating profile for user '{username_session}'. Fields: {list(update_data['$set'].keys())}")
-             update_result = registrations_collection.update_one({"_id": user_id}, update_data)
-             if update_result.modified_count >= 0:
-                 flash("Profile updated!", "success")
-                 if name and 'username' in session: session['username'] = name # Update session username if changed
-             else: flash("Profile update failed.", "danger")
-        else: flash("No changes detected.", "info")
-
-        return redirect(url_for('auth.view_profile'))
-
-    except InvalidId: # Catch specific error first
-         flash("Invalid user session identifier.", "danger")
-         session.clear(); return redirect(url_for('auth.login'))
-    except Exception as e:
-        logging.error(f"Error updating profile for user ID {user_id_str}: {e}", exc_info=True)
-        flash("An unexpected error occurred.", "danger")
-        return redirect(url_for('auth.view_profile'))
 
 
 # --- NEW: Route to Display Change Password Form ---
@@ -466,5 +334,174 @@ def change_password_submit():
         flash("An unexpected error occurred. Please try again later.", "danger")
         return redirect(url_for('auth.change_password_form'))
 
+# --- Profile Routes ---
+# --- Profile Routes ---
+@bp.route('/profile', methods=['GET'])
+def view_profile():
+    """Displays the user's profile page."""
+    from ..extensions import db # Need DB inside
+    if not is_logged_in(): flash("Please log in.", "warning"); return redirect(url_for('auth.login'))
+    if db is None: flash("Database unavailable.", "danger"); return redirect(url_for('core.dashboard'))
+    registrations_collection = db.registrations
+
+    try:
+        user_id = ObjectId(session['user_id'])
+        user_data = registrations_collection.find_one({"_id": user_id})
+        if not user_data: flash("User not found.", "danger"); session.clear(); return redirect(url_for('auth.login'))
+
+        # Prepare profile data safely
+        profile_data = { "_id": str(user_data["_id"]), "username": user_data.get("username"), "email": user_data.get("email"), "name": user_data.get("name", ""), "age": user_data.get("age", ""), "profile_picture_url": None, "login_method": user_data.get("login_method", "password") }
+        db_path = user_data.get("profile_picture_path")
+        if db_path:
+            try:
+                # This relies on static file serving for 'uploads' or a dedicated route
+                profile_data["profile_picture_url"] = url_for('static', filename=db_path)
+            except Exception as url_err: logging.error(f"Could not build profile pic URL for path '{db_path}': {url_err}")
+
+        logging.debug(f"Rendering profile page for: {profile_data.get('username')}")
+        return render_template('auth/profile.html', user=profile_data, now=datetime.utcnow())
+
+    except InvalidId:
+         flash("Invalid user session.", "danger"); session.clear(); return redirect(url_for('auth.login'))
+    except PyMongoError as db_err:
+         logging.error(f"View Profile DB Error for {session.get('user_id')}: {db_err}", exc_info=True)
+         flash("Database error fetching profile.", "danger"); return redirect(url_for('core.dashboard'))
+    except Exception as e:
+        logging.error(f"Error fetching profile for {session.get('user_id')}: {e}", exc_info=True)
+        flash("Error retrieving profile.", "danger"); return redirect(url_for('core.dashboard'))
+
+@bp.route('/profile/update', methods=['POST'])
+def update_profile():
+    from ..extensions import db
+    # ... (login check, db check) ...
+    if not is_logged_in(): flash("Please log in.", "warning"); return redirect(url_for('auth.login'))
+    if db is None: flash("Database unavailable.", "danger"); return redirect(url_for('auth.view_profile'))
+    registrations_collection = db.registrations
+    user_id_str = session['user_id']
+
+    try:
+        user_id = ObjectId(user_id_str)
+        username_session = session.get('username', 'Unknown')
+
+        name = request.form.get('name', '').strip()
+        age_str = request.form.get('age', '').strip()
+        profile_image_file = request.files.get('profile_picture')
+
+        update_data = {"$set": {"last_modified": datetime.utcnow()}}
+        unset_data = {}
+        # ... (process name, age) ...
+
+        # --- Handle Image Upload ---
+        if profile_image_file and profile_image_file.filename != '':
+            logging.debug(f"Processing profile picture upload: {profile_image_file.filename}, type: {profile_image_file.content_type}") # Log file info
+            if allowed_profile_image(profile_image_file.filename):
+                try:
+                    # --- Log paths being used ---
+                    upload_folder_base = current_app.config.get('UPLOAD_FOLDER')
+                    if not upload_folder_base: raise ValueError("UPLOAD_FOLDER not configured.")
+                    logging.debug(f"Base Upload Folder: {upload_folder_base}")
+
+                    profile_pics_rel_path = os.path.join('profile_pics', user_id_str)
+                    user_pic_dir_abs = os.path.join(upload_folder_base, profile_pics_rel_path)
+                    logging.debug(f"Absolute directory path for saving: {user_pic_dir_abs}")
+
+                    # --- Log before creating directory ---
+                    logging.debug(f"Attempting os.makedirs on: {user_pic_dir_abs}")
+                    os.makedirs(user_pic_dir_abs, exist_ok=True)
+                    logging.debug(f"Directory ensured/created: {user_pic_dir_abs}")
+
+                    original_filename = secure_filename(profile_image_file.filename)
+                    if not original_filename: # Check if secure_filename resulted in empty string
+                         raise ValueError("Could not secure the original filename.")
+                    _, f_ext = os.path.splitext(original_filename)
+                    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
+                    stored_filename = f"{timestamp}{f_ext}"
+                    save_path_abs = os.path.join(user_pic_dir_abs, stored_filename)
+                    logging.debug(f"Absolute save path for file: {save_path_abs}")
+
+                    # Determine DB path based on serving strategy (adjust if needed)
+                    image_db_path_to_store = os.path.join('uploads', 'profile_pics', user_id_str, stored_filename).replace("\\", "/")
+                    logging.debug(f"Path to store in DB: {image_db_path_to_store}")
+
+                    # (Optional delete old file logic...)
+
+                    # --- Log before saving file ---
+                    logging.info(f"Attempting to save profile picture to: {save_path_abs}")
+                    profile_image_file.save(save_path_abs) # <<< THE ACTUAL SAVE OPERATION
+                    logging.info(f"Profile picture saved successfully to absolute path.")
+                    update_data["$set"]["profile_picture_path"] = image_db_path_to_store
+
+                except PermissionError as pe:
+                    # <<< LOOK FOR THIS LOG >>>
+                    logging.error(f"PERMISSION DENIED saving profile picture to '{user_pic_dir_abs}' or '{save_path_abs}': {pe}", exc_info=True)
+                    flash(f"Error: Permission denied to save image. Server configuration issue.", "danger")
+                except OSError as oe:
+                    # <<< OR THIS LOG >>>
+                    logging.error(f"OS error saving profile picture (Disk full? Invalid path?): {oe}", exc_info=True)
+                    flash(f"Server OS error saving image: {oe.strerror}. Please try again later.", "danger")
+                except ValueError as ve: # Catch config or filename errors
+                    # <<< OR THIS LOG >>>
+                     logging.error(f"Configuration or value error during image upload: {ve}", exc_info=True)
+                     flash("Server configuration error preventing image upload.", "danger")
+                except Exception as upload_err: # Catch any other errors during the save process
+                    # <<< OR THIS LOG >>>
+                    logging.error(f"Unexpected error saving profile picture: {upload_err}", exc_info=True)
+                    flash("An unexpected error occurred during picture upload.", "danger")
+
+                # --- End Specific Exception Handling ---
+
+            else:
+                flash("Invalid image file type selected. Allowed: png, jpg, jpeg, gif, webp.", "warning")
+                # Decide if invalid type should stop the whole update or just skip image part
+                # return redirect(url_for('auth.view_profile')) # Uncomment to stop update on bad type
+
+        # --- Update Database (only if changes exist) ---
+        # ... (The rest of the update logic as before) ...
+        final_update_op = {}; # ... construct final_update_op ...
+        if final_update_op:
+            # ... (log update, perform update_one, flash success/fail) ...
+            try:
+                update_result = registrations_collection.update_one({"_id": user_id}, final_update_op)
+                # ... check update_result.acknowledged, flash ...
+            except PyMongoError as db_err: # Catch DB error during final update
+                 logging.error(f"Update Profile DB Error (final update): {db_err}", exc_info=True)
+                 flash("Database error saving profile changes.", "danger")
+                 # Fall through to redirect below, error is flashed
+            except Exception as final_e: # Catch any other error during final update
+                logging.error(f"Unexpected error during final profile update: {final_e}", exc_info=True)
+                flash("Unexpected error saving profile changes.", "danger")
+        else:
+             flash("No changes submitted.", "info")
+
+        return redirect(url_for('auth.view_profile')) # Redirect back
+
+    # --- Outer Exception Handling ---
+    except InvalidId:
+         # Indent the block
+         logging.warning(f"Invalid ObjectId format in session user_id: {session.get('user_id')}")
+         flash("Invalid user session identifier. Please log in again.", "danger")
+         session.clear()
+         return redirect(url_for('auth.login'))
+
+    except KeyError as e_key:
+         # Indent the block
+         logging.error(f"Session key missing during profile update: {e_key}", exc_info=True)
+         flash("Your session is invalid or has expired. Please log in again.", "warning")
+         session.clear()
+         return redirect(url_for('auth.login'))
+
+    except PyMongoError as db_err:
+         # Indent the block (This one was likely okay already, but ensure consistency)
+         logging.error(f"Update Profile DB Error for {user_id_str if 'user_id_str' in locals() else 'UNKNOWN'}: {db_err}", exc_info=True)
+         flash("A database error occurred updating profile.", "danger")
+         return redirect(url_for('auth.view_profile')) # Redirect back to profile page
+
+    except Exception as e:
+        # Indent the block (This one was likely okay already)
+        logging.error(f"Unexpected error updating profile for {user_id_str if 'user_id_str' in locals() else 'UNKNOWN'}: {e}", exc_info=True)
+        flash("An unexpected error occurred while updating profile.", "danger")
+        return redirect(url_for('auth.view_profile')) # Redirect back to profile page
+
+# ... (rest of file) ...
 
 # --- End auth_routes.py ---

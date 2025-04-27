@@ -54,7 +54,12 @@
                 <summary class="sidebar-section-title">👤 Account</summary>
                 <ul class="sidebar-submenu">
                     <li><a href="{{ url_for('auth.change_password_form') }}" >Change Password</a></li>
-                    <li><a href="{{url_for('auth.view_profile', username=data.username)}}" >View Profile</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'auth.view_profile' %}active{% endif %}" href="{{ url_for('auth.view_profile') }}"> {# Use the correct function name #}
+                           <i class="fas fa-user-circle fa-fw"></i>
+                            Profile
+                       </a>
+                   </li>
                     <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
                 </ul>
             </details>

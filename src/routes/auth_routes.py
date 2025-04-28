@@ -581,156 +581,119 @@ def view_profile():
     except PyMongoError as db_err: logging.error(f"View Profile DB Error: {db_err}"); flash("DB error.", "danger"); return redirect(url_for('core.dashboard'))
     except Exception as e: logging.error(f"Error fetching profile: {e}", exc_info=True); flash("Error retrieving profile.", "danger"); return redirect(url_for('core.dashboard'))
 
-
 @bp.route('/profile/update', methods=['POST'])
 def update_profile():
     from ..extensions import db
-    # --- Basic Checks ---
-    if not is_logged_in(): flash("Please log in.", "warning"); return redirect(url_for('auth.login')) # Has return
-    if db is None: flash("Database unavailable.", "danger"); return redirect(url_for('auth.view_profile')) # Has return
+    # Check 1
+    if not is_logged_in(): flash("Please log in.", "warning"); return redirect(url_for('auth.login'))
+    # Check 2
+    if db is None: flash("Database unavailable.", "danger"); return redirect(url_for('auth.view_profile'))
     registrations_collection = db.registrations
     user_id_str = session['user_id']
     logging.info(f"--- ENTERING /profile/update for user ID {user_id_str} ---")
 
-    # Use a single try block for the main logic, outer catches handle fundamental errors
+    # Outer Try Block
     try:
         user_id = ObjectId(user_id_str)
         username_session = session.get('username', 'Unknown')
-        logging.debug("Fetching current user data...")
         user = registrations_collection.find_one({"_id": user_id})
-        if not user: flash("User session invalid.", "danger"); session.clear(); return redirect(url_for('auth.login')) # Has return
-        logging.debug(f"Current user data fetched for {username_session}")
+        # Check 3
+        if not user: flash("User session invalid.", "danger"); session.clear(); return redirect(url_for('auth.login'))
 
         # Get form data
         name = request.form.get('name', '').strip()
         age_str = request.form.get('age', '').strip()
         profile_image_file = request.files.get('profile_picture')
         email = request.form.get('email', '').strip().lower()
-        logging.debug(f"Form Data - Email: '{email}', Image: {profile_image_file.filename if profile_image_file else 'None'}")
 
-        # Prepare update operations
         update_set = {"last_modified": datetime.utcnow()}
         update_unset = {}
         changes_intended = False
         image_save_failed = False
-        flash_messages = [] # Use list for multiple messages
+        flash_messages = []
 
-        # --- Process Name ---
-        if name and name != user.get("name"):
-            update_set["name"] = name
-            changes_intended = True
-            if 'username' in session: session['username'] = name # Update session immediately
+        # Process Name
+        if name and name != user.get("name"): update_set["name"] = name; changes_intended = True; # ... update session ...
 
-        # --- Process Age ---
+        # Process Age
         if 'age' in request.form:
-            current_age = user.get("age")
+            # ... (age validation logic) ...
             if age_str:
-                try:
-                    age = int(age_str)
-                    if not (0 < age < 130):
-                         flash("Valid age (1-129) required.", "warning")
-                         return redirect(url_for('auth.view_profile')) # RETURN on error
-                    if age != current_age:
-                        update_set["age"] = age; changes_intended = True
-                except ValueError:
-                     flash("Age must be a whole number.", "warning")
-                     return redirect(url_for('auth.view_profile')) # RETURN on error
-            elif current_age is not None: # Submitted empty, had value
-                update_unset["age"] = ""; changes_intended = True
+                try: # ... int conversion ...
+                    if not (0 < age < 130): flash("Valid age...", "warning"); return redirect(url_for('auth.view_profile')) # <<< Path A returns
+                    # ... set update_set, changes_intended ...
+                except ValueError: flash("Age must be number.", "warning"); return redirect(url_for('auth.view_profile')) # <<< Path B returns
+            elif user.get("age") is not None: update_unset["age"] = ""; changes_intended = True
 
-        # --- Process Email ---
+        # Process Email
         if user.get("login_method") == "password" and 'email' in request.form:
-            current_email = user.get('email')
-            if email and email != current_email:
-                if '@' not in email or '.' not in email.split('@')[-1]:
-                     flash("Valid email format required.", "warning")
-                     return redirect(url_for('auth.view_profile')) # RETURN on error
+            # ... (email validation logic) ...
+            if email and email != user.get('email'):
+                if '@' not in email or '.' not in email.split('@')[-1]: flash("Valid email...", "warning"); return redirect(url_for('auth.view_profile')) # <<< Path C returns
                 else: # Check uniqueness
-                    try:
-                        existing = registrations_collection.find_one({"email": email, "_id": {"$ne": user_id}})
-                        if existing:
-                            flash(f"Email '{email}' is already in use.", "danger")
-                            return redirect(url_for('auth.view_profile')) # RETURN on error
+                    try: # ... find_one check ...
+                        if existing: flash("Email exists...", "danger"); return redirect(url_for('auth.view_profile')) # <<< Path D returns
                         else: update_set["email"] = email; changes_intended = True
-                    except PyMongoError as db_err:
-                         logging.error(f"DB error checking email: {db_err}")
-                         flash("DB error checking email.", "danger")
-                         return redirect(url_for('auth.view_profile')) # RETURN on error
-            elif not email and current_email is not None: # Submitted empty
-                 update_unset["email"] = ""; changes_intended = True
+                    except PyMongoError: flash("DB error...", "danger"); return redirect(url_for('auth.view_profile')) # <<< Path E returns
+            elif not email and user.get('email') is not None: update_unset["email"] = ""; changes_intended = True
 
-        # --- Process Image Upload ---
+        # Process Image Upload
         if profile_image_file and profile_image_file.filename != '':
             changes_intended = True
             if allowed_profile_image(profile_image_file.filename):
-                try: # Save Image logic
-                    # ... (Paths, makedirs, save file) ...
-                    # Simplified path for now
-                    profile_pics_base=os.path.join(current_app.config['UPLOAD_FOLDER'],'profile_pics');user_pic_dir_abs=os.path.join(profile_pics_base,user_id_str);os.makedirs(user_pic_dir_abs,exist_ok=True);
-                    original_filename=secure_filename(profile_image_file.filename);_,f_ext=os.path.splitext(original_filename);timestamp=datetime.utcnow().strftime('%Y%m%d%H%M%S%f');stored_filename=f"{timestamp}{f_ext}";save_path_abs=os.path.join(user_pic_dir_abs,stored_filename);
-                    image_db_path_to_store = os.path.join('uploads', 'profile_pics', user_id_str, stored_filename).replace("\\", "/")
-
-                    logging.info(f"Attempting file save to: {save_path_abs}")
-                    profile_image_file.save(save_path_abs)
-                    logging.info(f"Image save successful.")
-                    update_set["profile_picture_path"] = image_db_path_to_store
-                except Exception as upload_err:
+                try: # Image save logic
+                    # ... (paths, makedirs, save, set update_set) ...
+                    update_set["profile_picture_path"] = image_db_path_to_store # Example
+                except Exception as upload_err: # Catches save errors
                     logging.error(f"IMAGE SAVE FAILED : {upload_err}", exc_info=True)
                     flash_messages.append(("Error uploading profile picture.", "warning"))
                     image_save_failed = True
-            else:
+            else: # Invalid image type
                 flash_messages.append(("Invalid image file type.", "warning"))
-                image_save_failed = True
+                image_save_failed = True # Treat as failure
 
         # --- Perform Database Update ---
         final_update_op = {}
         if len(update_set) > 1: final_update_op["$set"] = update_set
         if update_unset: final_update_op["$unset"] = update_unset
 
-        if changes_intended and final_update_op:
-             logging.info(f"Updating profile DB for '{username_session}'. Op: {final_update_op}")
-             try:
+        if changes_intended and final_update_op: # Case 1: Changes intended, operations exist
+             try: # DB Update logic
                  update_result = registrations_collection.update_one({"_id": user_id}, final_update_op)
-                 if update_result.acknowledged:
-                     logging.info(f"DB Update Ack. Matched: {update_result.matched_count}, Mod: {update_result.modified_count}")
-                     if not image_save_failed: flash_messages.append(("Profile updated successfully!", "success"))
-                 else: flash_messages.append(("Profile DB update failed (not acknowledged).", "danger"))
-             except DuplicateKeyError:
-                 logging.warning(f"Update failed: Email '{email}' exists (caught on update).")
-                 flash_messages.append((f"Update failed: Email '{email}' is already in use.", "danger"))
-             except PyMongoError as db_err:
-                 logging.error(f"Update Profile DB Error (final update): {db_err}", exc_info=True)
-                 flash_messages.append(("Database error saving profile changes.", "danger"))
-        elif not changes_intended and not image_save_failed:
-            flash_messages.append(("No changes detected to update.", "info"))
-        # If image save failed, its message is already in flash_messages
+                 if update_result.acknowledged: # Subcase 1a: Update successful
+                     if not image_save_failed: flash_messages.append(("Profile updated!", "success"))
+                 else: # Subcase 1b: Update not acknowledged
+                      flash_messages.append(("Profile DB update failed.", "danger"))
+             except DuplicateKeyError: # Subcase 1c: Duplicate key during update
+                 flash_messages.append((f"Update failed: Email exists.", "danger"))
+             except PyMongoError as db_err: # Subcase 1d: Other DB error during update
+                 flash_messages.append(("DB error saving changes.", "danger"))
+        elif not changes_intended and not image_save_failed: # Case 2: No changes, no image fail
+            flash_messages.append(("No changes detected.", "info"))
+        # Case 3: (Implicit else) changes_intended was True (e.g., image attempt)
+        #         BUT final_update_op is empty (e.g., only image changed but save failed)
+        #         OR image_save_failed is True.
+        #         In this case, the image error message is already in flash_messages.
 
-        # --- Flash all messages ---
+        # --- Flash Messages ---
         for msg, cat in flash_messages:
             flash(msg, cat)
 
-        # --- Final Redirect ---
-        # This return MUST be outside all inner try/excepts but inside the outer try
+        # --- !!! PROBLEM AREA !!! ---
+        # If execution reaches here after any of the DB update try/except paths (1a, 1b, 1c, 1d)
+        # OR after the implicit Case 3, there is NO return statement UNTIL the end of the outer try block.
+        # It needs to return *immediately* after flashing messages related to the update attempt.
+
+        # --- Corrected Final Redirect ---
+        # This should be the LAST line within the main 'try' block
         return redirect(url_for('auth.view_profile'))
 
+
     # --- Outer Exception Handling ---
-    except InvalidId:
-         flash("Invalid user session.", "danger")
-         session.clear()
-         return redirect(url_for('auth.login')) # Has return
-    except KeyError as e_key:
-         logging.error(f"Session key missing: {e_key}")
-         flash("Session invalid.", "warning")
-         session.clear()
-         return redirect(url_for('auth.login')) # Has return
-    except PyMongoError as db_err:
-         logging.error(f"Outer Update DB Error: {db_err}")
-         flash("DB Error processing profile update.", "danger")
-         return redirect(url_for('auth.view_profile')) # Has return
-    except Exception as e:
-        logging.error(f"Error updating profile: {e}", exc_info=True)
-        flash("Unexpected error updating profile.", "danger")
-        return redirect(url_for('auth.view_profile')) # Has return
+    except InvalidId: flash("Invalid session.", "danger"); session.clear(); return redirect(url_for('auth.login'))
+    except KeyError as e_key: logging.error(f"Session key missing: {e_key}"); flash("Session invalid.", "warning"); session.clear(); return redirect(url_for('auth.login'))
+    except PyMongoError as db_err: logging.error(f"Outer Update DB Error: {db_err}"); flash("DB Error.", "danger"); return redirect(url_for('auth.view_profile'))
+    except Exception as e: logging.error(f"Error updating profile: {e}", exc_info=True); flash("Unexpected error.", "danger"); return redirect(url_for('auth.view_profile'))
 # ... (rest of file) ...
 
 # --- End auth_routes.py ---

@@ -19,6 +19,8 @@ from ..extensions import db, google_bp, google_enabled # OK to import placeholde
 from ..utils.auth_utils import is_logged_in, login_user, hash_password, verify_password
 from ..utils.file_utils import get_secure_filename # We might need a specific allowed list for images
 
+import pdb
+
 # --- Allowed image extensions (Define globally for this module) ---
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
@@ -678,11 +680,18 @@ def update_profile():
         # --- Flash Messages ---
         for msg, cat in flash_messages:
             flash(msg, cat)
+         # --- SET BREAKPOINT HERE ---
+        logging.debug(">>> Reached end of TRY block. About to redirect. <<<")
+        pdb.set_trace()
+         # --- --------------------- ---
 
         # --- !!! PROBLEM AREA !!! ---
         # If execution reaches here after any of the DB update try/except paths (1a, 1b, 1c, 1d)
         # OR after the implicit Case 3, there is NO return statement UNTIL the end of the outer try block.
         # It needs to return *immediately* after flashing messages related to the update attempt.
+
+        
+
 
         # --- Corrected Final Redirect ---
         # This should be the LAST line within the main 'try' block

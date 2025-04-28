@@ -446,3 +446,73 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeUI();
 
 }); // End DOMContentLoaded
+/**
+ * dashboard_sidebar.js
+ * Handles the collapsing and expanding of the dashboard sidebar
+ * and saves the user's preference.
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("[Sidebar JS] DOM Content Loaded.");
+
+    const sidebar = document.getElementById('sidebarMenu');
+    const toggleButton = document.getElementById('sidebarToggleBtn');
+    // const mainContent = document.querySelector('.main-dashboard-content'); // Needed only if adjusting margin
+
+    if (!sidebar || !toggleButton) {
+        console.warn("[Sidebar JS] Sidebar or Toggle Button not found. Functionality disabled.");
+        return;
+    }
+
+    const iconExpand = 'fa-angle-double-right'; // Icon when sidebar is collapsed
+    const iconCollapse = 'fa-angle-double-left'; // Icon when sidebar is expanded
+    const storageKey = 'dashboardSidebarState';
+
+    // Function to set the sidebar state
+    function setSidebarState(state) {
+        console.log("[Sidebar JS] Setting state to:", state);
+        const isCollapsed = state === 'collapsed';
+        sidebar.classList.toggle('collapsed', isCollapsed);
+        // Adjust button icon
+        const iconElement = toggleButton.querySelector('i');
+        if (iconElement) {
+            iconElement.classList.remove(isCollapsed ? iconCollapse : iconExpand);
+            iconElement.classList.add(isCollapsed ? iconExpand : iconCollapse);
+        }
+        // Adjust title (tooltip)
+        toggleButton.title = isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar';
+
+        // Adjust main content margin (optional - can cause layout jumps if not handled carefully)
+        // if(mainContent) {
+        //     mainContent.style.marginLeft = isCollapsed ? '65px' : '240px';
+        // }
+
+        // Save state to localStorage
+        try {
+            localStorage.setItem(storageKey, state);
+            console.log("[Sidebar JS] Saved state to localStorage:", state);
+        } catch (e) {
+            console.warn("[Sidebar JS] Could not save sidebar state to localStorage:", e);
+        }
+         // Optional: Trigger resize event for libraries like Plotly that might need recalculation
+         // window.dispatchEvent(new Event('resize'));
+    }
+
+    // Add click listener to the toggle button
+    toggleButton.addEventListener('click', () => {
+        const currentState = sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded';
+        const newState = currentState === 'collapsed' ? 'expanded' : 'collapsed';
+        setSidebarState(newState);
+    });
+
+    // Apply initial state from localStorage or default
+    let initialState = 'expanded'; // Default state
+    try {
+        initialState = localStorage.getItem(storageKey) || 'expanded';
+    } catch (e) {
+         console.warn("[Sidebar JS] Could not read sidebar state from localStorage:", e);
+    }
+    setSidebarState(initialState); // Apply on load
+
+    console.log("[Sidebar JS] Initialization complete.");
+
+});

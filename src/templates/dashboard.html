@@ -5,10 +5,12 @@
 {% block head_extra %}
     {# Load Socket.IO client library - needed only for dashboard chat  in #}
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    {# --- NEW CSS for Collapsible Sidebar --- #}
+     
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-layout">
+<div class="dashboard-layout" data-sidebar-state="expanded">
     {# --- Left Sidebar --- #}
     <aside class="sidebar">
         <nav class="sidebar-nav">

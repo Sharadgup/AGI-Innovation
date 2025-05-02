@@ -6,6 +6,7 @@ import logging
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
+from .routes import agent_routes
 
 # --- Path Setup & Environment Loading ---
 # Get the directory containing this __init__.py file (src/)

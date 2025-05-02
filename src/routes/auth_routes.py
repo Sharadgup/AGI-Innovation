@@ -731,7 +731,7 @@ def check_agent_core():
 # --- Email Agent Routes ---
 
 # ... (email_agent_page route remains the same) ...
-@bp.route('/email/authorize')
+@bp.route('/email')
 def email_agent_page():
      if not is_logged_in(): flash("Log in required."); return redirect(url_for('auth.login'))
      return render_template('agents/email_agent.html', now=datetime.utcnow())

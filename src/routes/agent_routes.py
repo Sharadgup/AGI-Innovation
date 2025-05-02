@@ -191,3 +191,28 @@ def construction_agent_query():
         return jsonify({"answer": ai_resp, "chart_data": chart_data })
     except Exception as e:
         logging.error(f"Err proc construction query: {e}", exc_info=True); return jsonify({"error": "Server error."}), 500
+
+@bp.route('/email/authorize', methods=['GET']) # <<< MUST match this path and method
+def email_agent_authorize():                  # <<< MUST match this function name for url_for
+    """Starts the OAuth 2.0 flow for Gmail connection."""
+    # ... (Check login, check core components) ...
+    if not is_logged_in(): 
+        return redirect(url_for('auth.login'))  # ... redirect ...
+    core_error = check_agent_core()  # ... handle core_error ...
+    if core_error:
+        return core_error
+
+    try:
+        # Ensure this logic exists to get the auth URL
+        auth_url = gmail_api_handler.get_authorization_url(
+            redirect_uri=url_for('.email_agent_oauth_callback', _external=True), # Use '.' for same blueprint
+        )
+        if not auth_url: raise Exception("Could not generate auth URL")
+        logging.info(f"Redirecting user to Google Auth URL for email agent.")
+        return redirect(auth_url) # Must return a redirect
+
+    except Exception as e:
+        logging.error(f"Failed to start Gmail OAuth flow: {e}", exc_info=True)
+        flash("Error initiating connection with Google.", "danger")
+        # Make sure the redirect below uses the correct blueprint name
+        return redirect(url_for('agent.email_agent_page')) # Or wherever the main email agent page is

@@ -1,0 +1,70 @@
+/* src/static/css/agent_email.css */
+
+.config-section .card-body {
+    font-size: 0.95em;
+}
+
+#draftReviewArea .draft-review {
+    border: 1px solid #ffc107; /* Warning color */
+    background-color: #fff9e6;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+#draftReviewArea .draft-header {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ffeeba;
+    padding-bottom: 5px;
+}
+
+#draftReviewArea .draft-body {
+    background-color: #fff;
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-bottom: 10px;
+    white-space: pre-wrap; /* Preserve whitespace */
+    font-family: monospace;
+    font-size: 0.9em;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#draftReviewArea .draft-actions button {
+    margin-right: 5px;
+}
+
+#activityLog .log-entry {
+    border-bottom: 1px solid #eee;
+    padding: 8px 2px;
+    font-size: 0.9em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#activityLog .log-entry small {
+    color: #6c757d;
+    margin-right: 15px;
+    white-space: nowrap;
+}
+#activityLog .log-entry .log-status-success { color: green; }
+#activityLog .log-entry .log-status-failed { color: red; }
+#activityLog .log-entry .log-details { flex-grow: 1; margin-left: 10px; }
+
+
+.status-indicator {
+    display: inline-block; /* Allow margin */
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+.status-idle { background-color: #6c757d; color: white; }
+.status-running { background-color: #0d6efd; color: white; }
+.status-connecting { background-color: #ffc107; color: black;}
+.status-error { background-color: #dc3545; color: white; }

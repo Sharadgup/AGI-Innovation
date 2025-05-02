@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Autonomous Email Agent{% endblock %}
+
+{% block head_extra %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='agent_email.css') }}">
+    {# Link Socket.IO if needed for real-time status #}
+    {# <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script> #}
+    {# Link ADK Client JS library if provided by your ADK framework #}
+    {# <script src="/path/to/adk-client.js"></script> #}
+    <style>
+        /* Add styles from agent_email.css or keep them here */
+        .status-indicator { padding: 2px 8px; border-radius: 10px; font-size: 0.8em; font-weight: bold; }
+        .status-idle { background-color: #6c757d; color: white; }
+        .status-running { background-color: #0d6efd; color: white; }
+        .status-error { background-color: #dc3545; color: white; }
+        .log-entry { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 0.9em; }
+        .log-entry small { color: #6c757d; }
+        .draft-review { border: 1px solid #ffc107; background-color: #fff9e6; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .config-section { margin-bottom: 2rem; }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4"><i class="fas fa-envelope-open-text me-2"></i>Autonomous Email Agent</h1>
+
+    {# 1. Connection Status & Control #}
+    <div class="card shadow-sm mb-4 config-section">
+        <div class="card-header">Agent Status & Control</div>
+        <div class="card-body">
+            <p>Current Status: <strong id="agentStatus">Connecting...</strong> <span id="agentStatusIndicator" class="status-indicator status-idle">Idle</span></p>
+            {# Button to initiate OAuth flow if not connected #}
+            <button id="connectGmailBtn" class="btn btn-primary" style="display: none;"><i class="fab fa-google me-1"></i> Connect Gmail Account</button>
+            {# Buttons to start/stop the agent's monitoring process #}
+            <button id="startAgentBtn" class="btn btn-success" disabled><i class="fas fa-play me-1"></i> Start Monitoring</button>
+            <button id="stopAgentBtn" class="btn btn-danger" disabled><i class="fas fa-stop me-1"></i> Stop Monitoring</button>
+            <div id="agentControlError" class="text-danger small mt-2"></div>
+        </div>
+    </div>
+
+    {# 2. Agent Configuration (Simplified) #}
+    <div class="card shadow-sm mb-4 config-section">
+        <div class="card-header">Configuration Rules</div>
+        <div class="card-body">
+            <form id="agentConfigForm">
+                <div class="mb-3">
+                    <label for="monitorLabel" class="form-label">Monitor Label/Folder:</label>
+                    <input type="text" id="monitorLabel" class="form-control" value="INBOX" placeholder="e.g., INBOX, Support Tickets">
+                </div>
+                <div class="mb-3">
+                    <label for="processingRules" class="form-label">Processing Instructions (Natural Language):</label>
+                    <textarea id="processingRules" class="form-control" rows="3" placeholder="e.g., 'Reply to basic support questions about pricing. Categorize invoices. Flag urgent client emails.'"></textarea>
+                </div>
+                 <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="requireApproval">
+                    <label class="form-check-label" for="requireApproval">Require my approval before sending replies</label>
+                </div>
+                <button type="submit" class="btn btn-secondary">Save Configuration</button>
+                 <div id="configSaveStatus" class="text-success small mt-2"></div>
+            </form>
+        </div>
+    </div>
+
+     {# 3. Drafts Awaiting Approval #}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">Drafts Awaiting Approval (<span id="draftCount">0</span>)</div>
+        <div class="card-body">
+            <div id="draftReviewArea">
+                <p class="text-muted">No drafts currently awaiting approval.</p>
+                {# Drafts will be loaded here by JS #}
+            </div>
+            <button id="refreshDraftsBtn" class="btn btn-sm btn-outline-secondary mt-2"><i class="fas fa-sync-alt"></i> Refresh Drafts</button>
+        </div>
+    </div>
+
+    {# 4. Agent Activity Log #}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Activity Log</span>
+            <button id="refreshLogsBtn" class="btn btn-sm btn-outline-secondary"><i class="fas fa-sync-alt"></i> Refresh Logs</button>
+        </div>
+        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+            <div id="activityLog">
+                <p class="text-muted">Agent activity will appear here...</p>
+                {# Log entries will be loaded here by JS #}
+            </div>
+        </div>
+    </div>
+
+</div> {# End Container #}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='agent_email.js') }}" defer></script>
+{% endblock %}

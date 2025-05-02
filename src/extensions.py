@@ -94,7 +94,7 @@ def init_app(app):
                 # Assign Collections
                 logging.debug("Assigning MongoDB collection objects...")
                 registrations_collection = db["registrations"] # Add all collection assignments here...
-                input_prompts_collection = db["input_prompts"]; documentation_collection = db["documentation"]; chats_collection = db["chats"]; general_chats_collection = db["general_chats"]; education_chats_collection = db["education_chats"]; healthcare_chats_collection = db["healthcare_chats"]; construction_agent_interactions_collection = db["construction_agent_interactions"]; pdf_analysis_collection = db["pdf_analysis"]; pdf_chats_collection = db["pdf_chats"]; voice_conversations_collection = db["voice_conversations"]; analysis_uploads_collection = db["analysis_uploads"]; news_articles_collection = db["news_articles"]
+                input_prompts_collection = db["input_prompts"]; documentation_collection = db["documentation"]; chats_collection = db["chats"]; general_chats_collection = db["general_chats"]; education_chats_collection = db["education_chats"]; healthcare_chats_collection = db["healthcare_chats"]; construction_agent_interactions_collection = db["construction_agent_interactions"]; pdf_analysis_collection = db["pdf_analysis"]; pdf_chats_collection = db["pdf_chats"]; voice_conversations_collection = db["voice_conversations"]; analysis_uploads_collection = db["analysis_uploads"]; news_articles_collection = db["news_articles"]; email_log_collection = db["email_logs"]; agent_state_collection = db["agent_state"]
                 logging.info("MongoDB Collections assigned.")
 
                 # Ensure Indexes

@@ -118,6 +118,7 @@ def create_app(config_class=Config):
         app.register_blueprint(pdf_routes.bp, url_prefix='/pdf')
         app.register_blueprint(news_routes.bp, url_prefix='/news')
         app.register_blueprint(voice_routes.bp, url_prefix='/voice')
+        app.register_blueprint(agent_routes.bp, url_prefix='/agent')
 
         # --- Conditionally register Google OAuth Blueprint ---
         # Check if the blueprint object exists in extensions (was created successfully)

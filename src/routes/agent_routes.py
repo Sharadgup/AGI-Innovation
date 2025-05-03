@@ -1,11 +1,8 @@
 # src/routes/agent_routes.py
-
 import logging
 from flask import Blueprint, render_template, redirect, url_for, flash, session, request, jsonify
 from datetime import datetime
 from bson import ObjectId
-import json
-
 # --- Relative Imports ---
 # --- OK to import placeholder objects like db, genai_model if needed globally ---
 # from ..extensions import db, genai_model
@@ -13,7 +10,9 @@ import json
 
 # --- Import Utils ---
 from ..utils.auth_utils import is_logged_in
-# from ..utils.api_utils import log_gemini_response_details # Import if using the logger
+
+import json
+
 
 bp = Blueprint('agent', __name__)
 
@@ -101,7 +100,7 @@ def healthcare_agent_query():
     # --- Make sure to use locally accessed `genai_model`, `safety_settings`, `healthcare_chats_collection` ---
     if not request.is_json: return jsonify({"error": "Invalid request format."}), 400
     data=request.get_json(); user_query=data.get('query','').strip()
-    username=session.get('username','User'); user_id_str=session.get('user_id')
+    username = session.get('username', 'User'); user_id_str = session.get('user_id')
     if not user_query or not user_id_str: return jsonify({"error":"Missing query/session."}), 400
     try: user_id = ObjectId(user_id_str)
     except Exception as e: logging.error(f"Invalid user_id format: {e}"); return jsonify({"error": 'Session error.'}), 500
@@ -118,10 +117,11 @@ def healthcare_agent_query():
         logging.info(f"Sending healthcare query to Gemini for user {username}...")
         response = genai_model.generate_content(prompt, safety_settings=safety_settings)
         # ... (process response) ...
-        if response.candidates: ai_resp=response.text if response.text else "[AI empty]"
-        elif hasattr(response, 'prompt_feedback'): ai_resp = f"[AI blocked: {response.prompt_feedback.block_reason.name}]"
-        else: ai_resp="[AI blocked/empty]"
-
+        if response.candidates:
+            ai_resp = response.text if response.text else "[AI empty]"
+        elif hasattr(response, 'prompt_feedback'):
+            ai_resp = f"[AI blocked: {response.prompt_feedback.block_reason.name}]"
+        else: ai_resp = "[AI blocked/empty]"
         if interaction_id and not ai_resp.startswith("[AI"):
             try: healthcare_chats_collection.update_one( {"_id":interaction_id}, {"$set":{"ai_answer":ai_resp,"answered_at":datetime.utcnow()}})
             except Exception as e: logging.error(f"Err update health answer {interaction_id}: {e}")
@@ -148,8 +148,9 @@ def construction_agent_query():
     # --- Make sure to use locally accessed `genai_model`, `safety_settings`, `construction_agent_interactions_collection` ---
     if not request.is_json: return jsonify({"error": "Invalid request format."}), 400
     data = request.get_json(); user_query = data.get('query', '').strip(); data_context = data.get('context', '')
-    username = session.get('username', 'User'); user_id_str = session.get('user_id')
-    if not user_query or not user_id_str: return jsonify({"error":"Missing query/session."}), 400
+    username = session.get('username', 'User')
+    user_id_str = session.get('user_id')
+    if not user_query or not user_id_str: return jsonify({"error": "Missing query/session."}), 400
     try: user_id = ObjectId(user_id_str)
     except Exception as e: logging.error(f"Invalid user_id format: {e}"); return jsonify({"error": 'Session error.'}), 500
 
@@ -192,27 +193,3 @@ def construction_agent_query():
     except Exception as e:
         logging.error(f"Err proc construction query: {e}", exc_info=True); return jsonify({"error": "Server error."}), 500
 
-@bp.route('/email/authorize', methods=['GET']) # <<< MUST match this path and method
-def email_agent_authorize():                  # <<< MUST match this function name for url_for
-    """Starts the OAuth 2.0 flow for Gmail connection."""
-    # ... (Check login, check core components) ...
-    if not is_logged_in(): 
-        return redirect(url_for('auth.login'))  # ... redirect ...
-    core_error = check_agent_core()  # ... handle core_error ...
-    if core_error:
-        return core_error
-
-    try:
-        # Ensure this logic exists to get the auth URL
-        auth_url = gmail_api_handler.get_authorization_url(
-            redirect_uri=url_for('.email_agent_oauth_callback', _external=True), # Use '.' for same blueprint
-        )
-        if not auth_url: raise Exception("Could not generate auth URL")
-        logging.info(f"Redirecting user to Google Auth URL for email agent.")
-        return redirect(auth_url) # Must return a redirect
-
-    except Exception as e:
-        logging.error(f"Failed to start Gmail OAuth flow: {e}", exc_info=True)
-        flash("Error initiating connection with Google.", "danger")
-        # Make sure the redirect below uses the correct blueprint name
-        return redirect(url_for('agent.email_agent_page')) # Or wherever the main email agent page is
